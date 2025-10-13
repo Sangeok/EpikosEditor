@@ -29,6 +29,7 @@ interface MediaStore {
   splitTextElement: (textElementId: string, splitTime: number) => void;
   cloneTextElement: (textElementId: string) => string | null;
   addMediaElement: (mediaElement: MediaElement) => void;
+  addMediaElements: (mediaElements: MediaElement[]) => void;
   deleteMediaElement: (mediaElementId: string) => void;
   updateMediaElement: (mediaElementId: string, updates: Partial<MediaElement>) => void;
   updateAllMediaElement: (
@@ -296,6 +297,47 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
         media: {
           ...state.media,
           mediaElement: updatedMediaElements,
+          projectDuration: newProjectDuration,
+        },
+      };
+    }),
+
+  addMediaElements: (mediaElements: MediaElement[]) =>
+    set((state) => {
+      const all = state.media.mediaElement;
+
+      // lane별 마지막 endTime 계산(기존 상태 기준)
+      const laneLastEnd = new Map<string, number>();
+      for (const el of all) {
+        const lane = el.laneId ?? "Media-0";
+        laneLastEnd.set(lane, Math.max(laneLastEnd.get(lane) ?? 0, el.endTime));
+      }
+
+      // 새로 추가할 요소들 계산
+      const toAdd: MediaElement[] = [];
+      for (const el of mediaElements) {
+        const lane = el.laneId ?? "Media-0";
+        const hasExisting = laneLastEnd.has(lane);
+        const base = laneLastEnd.get(lane) ?? 0;
+
+        // 기존 요소가 있으면 무조건 이어 붙이고,
+        // 없으면 주어진 startTime을 우선, 없으면 0부터 시작
+        const startTime = hasExisting ? base : el.startTime ?? 0;
+        const endTime = startTime + el.duration;
+
+        const next: MediaElement = { ...el, startTime, endTime };
+        toAdd.push(next);
+        laneLastEnd.set(lane, endTime);
+      }
+
+      const updated = [...all, ...toAdd];
+      const addedMaxEnd = toAdd.length ? Math.max(...toAdd.map((e) => e.endTime)) : state.media.projectDuration;
+      const newProjectDuration = Math.max(state.media.projectDuration, addedMaxEnd);
+
+      return {
+        media: {
+          ...state.media,
+          mediaElement: updated,
           projectDuration: newProjectDuration,
         },
       };

@@ -13,11 +13,9 @@ export const useLoadProject = () => {
     try {
       const success = await ProjectPersistenceService.loadProject(projectId);
       if (success) {
-        router.push(`/edits/${projectId}`);
+        router.push(`/workflowSelector`);
       } else {
-        alert(
-          "Failed to load project. The project may be corrupted or no longer exist."
-        );
+        alert("Failed to load project. The project may be corrupted or no longer exist.");
       }
     } catch (error) {
       console.error("Failed to load project:", error);

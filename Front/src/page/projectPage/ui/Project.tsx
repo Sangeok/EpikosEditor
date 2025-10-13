@@ -40,16 +40,11 @@ export default function Project() {
           </IconButton>
           <div className="flex h-full items-end gap-4 pl-4">
             <h1 className="text-3xl font-bold">My Projects</h1>
-            <h1 className="text-base text-zinc-400">
-              {projects.length} projects
-            </h1>
+            <h1 className="text-base text-zinc-400">{projects.length} projects</h1>
           </div>
         </div>
         {!showSelectMode && (
-          <NotSelectModeButtons
-            setShowSelectMode={setShowSelectMode}
-            setShowProjectManager={setShowProjectManager}
-          />
+          <NotSelectModeButtons setShowSelectMode={setShowSelectMode} setShowProjectManager={setShowProjectManager} />
         )}
         {showSelectMode && (
           <SelectModeButtons
@@ -73,11 +68,7 @@ export default function Project() {
         ))}
       </div>
 
-      <Dialog
-        open={showProjectManager}
-        onClose={() => setShowProjectManager(false)}
-        title="New Project"
-      >
+      <Dialog open={showProjectManager} onClose={() => setShowProjectManager(false)} title="New Project">
         <ProjectCreator onClose={() => setShowProjectManager(false)} />
       </Dialog>
     </div>
