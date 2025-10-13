@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/.claude/agents/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/ui/player/model/hooks/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/ui/player/model/services/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/ui/player/ui/_component/Composition/ui/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/ui/player/ui/_component/Composition/ui/_component/SequenceItem/ui/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/model/store/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/entities/media/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/src/features/editFeatures/ui/editor-subSidebar/ui/**)",
+      "Read(//c/Users/함상억/Documents/git/videoEditorH/Front/**)",
+      "Read(//c/Users/hamso/OneDrive/Desktop/git/videoEditorH/Front/src/features/editFeatures/ui/editor-rightSidebar/ui/_component/**)",
+      "Read(//c/Users/hamso/OneDrive/Desktop/git/videoEditorH/Front/src/features/editFeatures/ui/editor-rightSidebar/ui/_component/TextEditRightSide/ui/**)",
+      "Read(//c/Users/hamso/OneDrive/Desktop/git/videoEditorH/Front/src/features/editFeatures/ui/editor-rightSidebar/ui/_component/ImageEditRightSide/ui/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
