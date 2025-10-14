@@ -11,8 +11,8 @@ export default function ImageGenerateButton({
   isLoading: boolean;
   onClick: () => void;
 }) {
-  let buttonStyle = "mt-4 cursor-pointer ";
-  buttonStyle += isDone ? "bg-green-500" : "bg-white text-black";
+  let buttonStyle = "flex justify-center items-center mt-4 cursor-pointer ";
+  buttonStyle += isDone ? "bg-green-500" : "bg-black text-white";
 
   let buttonContent;
   if (isLoading) {

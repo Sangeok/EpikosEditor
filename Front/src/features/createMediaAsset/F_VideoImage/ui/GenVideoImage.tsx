@@ -7,23 +7,29 @@ import { LoadingButton } from "@/shared/ui/molecule/LoadingButton";
 
 export default function GenVideoImage() {
   const imageData = useMediaAssetStore((state) => state.initialCreateVideoData.imageData);
+  const selectedVideoScript = useMediaAssetStore(
+    (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
+  );
 
   const [isDoneCreateImage, setIsDoneCreateImage] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { resVideoScript, GenerateScript } = useGenImageScript({
+  const { imageScript, GenerateScript } = useGenImageScript({
     setIsDoneCreateImage,
     setLoading,
   });
 
+  console.log("imageScript", imageScript);
+  console.log("videoScript", selectedVideoScript);
+
   const { GenerateImage } = useGenVideoImage({
-    resVideoScript,
+    imageScript,
     setLoading,
     imageData,
     setIsDoneCreateImage,
   });
 
-  const hasVideoScript = resVideoScript?.length > 0;
+  const hasVideoScript = imageScript?.length > 0;
 
   return (
     <div className="mt-5 border-b border-gray-200 pb-5">
@@ -40,7 +46,7 @@ export default function GenVideoImage() {
         <label htmlFor="resScript">Image Script Result</label>
         {hasVideoScript && (
           <div className="flex flex-col gap-y-4">
-            {resVideoScript?.map((item: any, index: number) => (
+            {imageScript?.map((item: any, index: number) => (
               <ScriptItem
                 key={item.imagePrompt}
                 item={item}

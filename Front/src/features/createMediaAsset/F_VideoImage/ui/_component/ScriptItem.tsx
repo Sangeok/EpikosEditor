@@ -25,10 +25,10 @@ export function ScriptItem({ item, index, isDone, isLoading, imageData, onGenera
           <Button
             size="sm"
             variant="dark"
-            className="mt-2 w-full bg-gray-100 hover:bg-gray-200 text-black font-medium shadow-sm transition-colors cursor-pointer"
+            className="mt-2 w-full font-medium shadow-sm transition-colors cursor-pointer"
             onClick={() => handleDownload(index, imageData)}
           >
-            <Download />
+            <Download className="w-4 h-4 mr-2" />
             Image Download
           </Button>
         </>

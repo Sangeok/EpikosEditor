@@ -1,23 +1,12 @@
 import { create } from "zustand";
-import { CreateVideoField, ImageDataType, videoScriptType, VideoStyleOptionsType } from "./types/index";
-
-type CreateVideoType = {
-  title: string;
-  topic: string;
-  topicDetail: string;
-  videoScript: videoScriptType[];
-  videoCaption: string;
-  imageData: ImageDataType[];
-  language: "English" | "Korean";
-  generateImage: {
-    generateImageStyle: VideoStyleOptionsType;
-    generateImageScript: videoScriptType | null;
-  };
-  ttsUrl: string;
-  captions: string;
-};
-
-const initialCreateVideoData: CreateVideoType = {
+import {
+  CreateVideoField,
+  ImageDataType,
+  videoScriptType,
+  VideoStyleOptionsType,
+  CreateVideoType,
+} from "./types/index";
+export const initialCreateVideoData: CreateVideoType = {
   title: "",
   topic: "",
   topicDetail: "",
@@ -27,8 +16,9 @@ const initialCreateVideoData: CreateVideoType = {
   language: "English",
   generateImage: {
     generateImageStyle: "",
-    generateImageScript: null,
+    selectedVideoScript: null,
   },
+  imageScript: [],
   ttsUrl: "",
   captions: "",
 };
@@ -38,12 +28,15 @@ interface CreateVideoStore {
   setCreateVideoDataByField: (field: CreateVideoField, data: string | ImageDataType[] | any) => void;
   setGenerateImageDataByFied: (field1: string, data: VideoStyleOptionsType | videoScriptType) => void;
   setTts: (ttsUrl: string) => void;
+  // 추가: 전체 세터/리셋
+  setCreateVideoData: (data: CreateVideoType) => void;
+  resetCreateVideoData: () => void;
 }
 
 const useCreateVideoStore = create<CreateVideoStore>((set) => ({
   initialCreateVideoData: initialCreateVideoData,
 
-  setCreateVideoDataByField: (field: CreateVideoField, data: string | ImageDataType[]) =>
+  setCreateVideoDataByField: (field: CreateVideoField, data: string | ImageDataType[] | string[]) =>
     set((state) => ({
       initialCreateVideoData: {
         ...state.initialCreateVideoData,
@@ -69,6 +62,10 @@ const useCreateVideoStore = create<CreateVideoStore>((set) => ({
         ttsUrl: ttsUrl,
       },
     })),
+
+  // 전체 세터/리셋 구현
+  setCreateVideoData: (data) => set({ initialCreateVideoData: data }),
+  resetCreateVideoData: () => set({ initialCreateVideoData }),
 }));
 
 export default useCreateVideoStore;

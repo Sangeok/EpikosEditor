@@ -11,15 +11,18 @@ interface GenImageScriptProps {
 }
 
 export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImageScriptProps) => {
-  const [resVideoScript, setResVideoScript] = useState<any[]>([]);
-
+  const imageScript = useMediaAssetStore((state) => state.initialCreateVideoData.imageScript);
   const topic = useMediaAssetStore((state) => state.initialCreateVideoData.topic);
   const topicDetail = useMediaAssetStore((state) => state.initialCreateVideoData.topicDetail);
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
   const videoStyle = useMediaAssetStore((state) => state.initialCreateVideoData.generateImage.generateImageStyle);
-  const videoScript = useMediaAssetStore((state) => state.initialCreateVideoData.generateImage.generateImageScript);
+  const selectedVideoScript = useMediaAssetStore(
+    (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
+  );
 
   const scenes = useCaptionStore((state) => state.scenes);
+
+  const setImageScript = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
   const GenerateScript = async () => {
     setLoading(true);
@@ -34,14 +37,16 @@ export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImage
 
       const result = await axios.post("/api/generate-imageScriptUsingCaption", {
         style: videoStyle,
-        script: videoScript?.content || "",
+        script: selectedVideoScript?.content || "",
         language: language,
         topic,
         topicDetail,
         scenes,
       });
 
-      setResVideoScript(result?.data);
+      console.log("result", result?.data);
+
+      setImageScript("imageScript", result?.data);
 
       // 새 스크립트가 생성되면 이미지 생성 상태 초기화
       const initialImageStatus = Object.fromEntries(Array.from({ length: result?.data.length }, (_, i) => [i, false]));
@@ -53,5 +58,5 @@ export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImage
     }
   };
 
-  return { resVideoScript, GenerateScript };
+  return { imageScript, GenerateScript };
 };

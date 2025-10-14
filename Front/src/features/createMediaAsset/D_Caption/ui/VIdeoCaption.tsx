@@ -26,11 +26,11 @@ export default function VideoCaption() {
       </header>
 
       <div className="flex w-full justify-between gap-2">
-        <LoadingButton loading={loading} Content="Generate Captions" onClick={GenerateCaptions} className="mt-4" />
+        <LoadingButton loading={loading} Content="Generate Captions" onClick={GenerateCaptions} className="mt-8" />
 
         {srtContent && (
           <Button
-            className="bg-blue-500 hover:bg-blue-600 text-white mt-4 cursor-pointer"
+            className="bg-blue-500 hover:bg-blue-600 text-white mt-8 cursor-pointer"
             size={"sm"}
             onClick={() => downloadSRT(srtContent)}
           >

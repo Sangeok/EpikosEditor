@@ -1,17 +1,17 @@
 "use client";
 
-import { ImageDataType } from "@/entities/mediaAsset/types";
+import { ImageDataType, ImageScriptType } from "@/entities/mediaAsset/types";
 import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import axios from "axios";
 import React from "react";
 
 export const useGenVideoImage = ({
-  resVideoScript,
+  imageScript,
   setLoading,
   imageData,
   setIsDoneCreateImage,
 }: {
-  resVideoScript: any[];
+  imageScript: ImageScriptType[];
   setLoading: (loading: boolean) => void;
   imageData: ImageDataType[];
   setIsDoneCreateImage: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
@@ -19,7 +19,7 @@ export const useGenVideoImage = ({
   const setImageData = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
   const GenerateImage = async (index: number) => {
-    const imagePrompt = resVideoScript[index].imagePrompt;
+    const imagePrompt = imageScript[index].imagePrompt;
 
     setLoading(true);
     try {
@@ -33,10 +33,10 @@ export const useGenVideoImage = ({
             ? {
                 imageId: index,
                 url: result?.data.data.imageUrl,
-                startTime: resVideoScript[index].startTime ?? 0,
-                endTime: resVideoScript[index].endTime ?? 0,
-                duration: resVideoScript[index].duration ?? 0,
-                type: resVideoScript[index].type ?? "",
+                startTime: imageScript[index].startTime ?? 0,
+                endTime: imageScript[index].endTime ?? 0,
+                duration: imageScript[index].duration ?? 0,
+                type: imageScript[index].type ?? "",
               }
             : item
         );
@@ -45,10 +45,10 @@ export const useGenVideoImage = ({
         const imageUrlData = {
           imageId: index,
           url: result?.data.data.imageUrl,
-          startTime: resVideoScript[index].startTime ?? 0,
-          endTime: resVideoScript[index].endTime ?? 0,
-          duration: resVideoScript[index].duration ?? 0,
-          type: resVideoScript[index].type ?? "",
+          startTime: imageScript[index].startTime ?? 0,
+          endTime: imageScript[index].endTime ?? 0,
+          duration: imageScript[index].duration ?? 0,
+          type: imageScript[index].type ?? "",
         };
         console.log("imageUrlData", imageUrlData);
         const updatedImageUrl: ImageDataType[] = [...imageData, imageUrlData];

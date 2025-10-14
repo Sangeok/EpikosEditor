@@ -17,12 +17,10 @@ export default function ProjectCreator({ onClose }: ProjectCreatorProps) {
   const router = useRouter();
 
   const handleNewProject = async () => {
+    const newProjectId = await ProjectPersistenceService.createNewProject(saveProjectName);
     setLoading(true);
     try {
-      const newProjectId = await ProjectPersistenceService.createNewProject(
-        saveProjectName
-      );
-      router.push(`/edits/${newProjectId}`);
+      router.push(`/workflowSelector`);
       onClose();
     } catch (error) {
       console.error("Failed to create new project:", error);
@@ -39,11 +37,7 @@ export default function ProjectCreator({ onClose }: ProjectCreatorProps) {
       />
 
       <div className="flex gap-3 justify-end">
-        <Button
-          onClick={handleNewProject}
-          className="flex items-center gap-2"
-          disabled={loading}
-        >
+        <Button onClick={handleNewProject} className="flex items-center gap-2" disabled={loading}>
           <Plus size={16} />
           Create New Project
         </Button>
