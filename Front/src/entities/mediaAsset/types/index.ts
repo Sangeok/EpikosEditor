@@ -12,6 +12,7 @@ export type ImageDataType = {
   endTime: number;
   duration: number;
   type: string;
+  isCreated: boolean;
 };
 
 export type ImageScriptType = {
@@ -39,6 +40,7 @@ export type CreateVideoType = {
   imageScript: ImageScriptType[];
   ttsUrl: string;
   captions: string;
+  videoExplanation: string;
 };
 
 export type CreateVideoField =
@@ -56,4 +58,5 @@ export type CreateVideoField =
   | "cloudinaryTtsUrl"
   | "topicDetail"
   | "imageScript"
+  | "videoExplanation"
   | "";

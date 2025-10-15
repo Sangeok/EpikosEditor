@@ -29,6 +29,7 @@ export function convertImageElement(imageData: ImageDataType, laneId: string): M
     left: DEFAULT_POSITION,
     volume: DEFAULT_VOLUME,
     speed: DEFAULT_SPEED,
+    origin: "create-init",
   };
 }
 

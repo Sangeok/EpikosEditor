@@ -19,6 +19,7 @@ export interface TextElement {
 
   maxWidth?: string;
   whiteSpace?: string;
+  origin?: "create-init" | "user" | string;
 }
 
 export interface MediaElement {
@@ -47,6 +48,7 @@ export interface MediaElement {
   // video only
   volume?: number;
   speed?: number;
+  origin?: "create-init" | "user" | string;
 }
 
 export interface AudioElement {
@@ -62,6 +64,7 @@ export interface AudioElement {
   speed: number;
   // source trim offset in seconds (how much to skip from the start of the file)
   sourceStart?: number;
+  origin?: "create-init" | "user" | string;
 }
 
 export type TrackElement = MediaElement | AudioElement | TextElement;

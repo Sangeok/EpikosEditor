@@ -51,7 +51,6 @@ export default function GenVideoImage() {
                 key={item.imagePrompt}
                 item={item}
                 index={index}
-                isDone={isDoneCreateImage[index]}
                 isLoading={loading}
                 imageData={imageData}
                 onGenerateImage={GenerateImage}

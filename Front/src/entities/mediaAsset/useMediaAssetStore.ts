@@ -21,6 +21,7 @@ export const initialCreateVideoData: CreateVideoType = {
   imageScript: [],
   ttsUrl: "",
   captions: "",
+  videoExplanation: "",
 };
 
 interface CreateVideoStore {

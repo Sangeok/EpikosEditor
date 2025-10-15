@@ -7,19 +7,24 @@ import Button from "@/shared/ui/atoms/Button/ui/Button";
 interface ScriptItemProps {
   item: any;
   index: number;
-  isDone: boolean;
   isLoading: boolean;
   imageData: ImageDataType[];
   onGenerateImage: (index: number) => Promise<void>;
 }
 
-export function ScriptItem({ item, index, isDone, isLoading, imageData, onGenerateImage }: ScriptItemProps) {
+export function ScriptItem({ item, index, isLoading, imageData, onGenerateImage }: ScriptItemProps) {
   const { handleDownload } = useImageDownload();
+
+  console.log("imageData", imageData);
 
   return (
     <div className="flex flex-col gap-1 mb-8" key={item.imagePrompt}>
       <div className="border border-gray-300 rounded-md p-2">{item.imagePrompt}</div>
-      <ImageGenerateButton isDone={isDone} isLoading={isLoading} onClick={() => onGenerateImage(index)} />
+      <ImageGenerateButton
+        isDone={imageData[index]?.isCreated ?? false}
+        isLoading={isLoading}
+        onClick={() => onGenerateImage(index)}
+      />
       {imageData.some((img) => img.imageId === index) && (
         <>
           <Button

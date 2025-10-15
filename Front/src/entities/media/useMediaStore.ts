@@ -16,6 +16,7 @@ interface MediaStore {
   media: Media;
   setMedia: (media: Media) => void;
   setFps: (fps: number) => void;
+  clearInitElementsInLanes: (targets: Array<{ type: "media" | "audio" | "text"; laneId: string }>) => void;
   addTextElement: (textElement: TextElement, preserveTiming?: boolean) => void;
   deleteTextElement: (textElementId: string) => void;
   updateTextElement: (textElementId: string, updates: Partial<TextElement>) => void;
@@ -52,6 +53,47 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
   media: initialMedia,
   setMedia: (media) => set({ media }),
   setFps: (fps) => set({ media: { ...get().media, fps } }),
+  clearInitElementsInLanes: (targets) =>
+    set((state) => {
+      const mediaLanes = new Set<string>();
+      const audioLanes = new Set<string>();
+      const textLanes = new Set<string>();
+
+      for (const t of targets) {
+        switch (t.type) {
+          case "media":
+            mediaLanes.add(t.laneId);
+            break;
+          case "audio":
+            audioLanes.add(t.laneId);
+            break;
+          case "text":
+            textLanes.add(t.laneId);
+            break;
+        }
+      }
+
+      const mediaElement = state.media.mediaElement.filter(
+        (e) => !(mediaLanes.has(e.laneId ?? "Media-0") && (e as any).origin === "create-init")
+      );
+      const audioElement = state.media.audioElement.filter(
+        (e) => !(audioLanes.has(e.laneId ?? "Audio-0") && (e as any).origin === "create-init")
+      );
+      const textElement = state.media.textElement.filter(
+        (e) => !(textLanes.has(e.laneId ?? "Text-0") && (e as any).origin === "create-init")
+      );
+
+      const allEndTimes = [
+        ...mediaElement.map((e) => e.endTime),
+        ...audioElement.map((e) => e.endTime),
+        ...textElement.map((e) => e.endTime),
+      ];
+      const projectDuration = allEndTimes.length > 0 ? Math.max(...allEndTimes) : 0;
+
+      return {
+        media: { ...state.media, mediaElement, audioElement, textElement, projectDuration },
+      };
+    }),
   addTextElement: (textElement: TextElement, preserveTiming = false) =>
     set((state) => {
       const all = state.media.textElement;

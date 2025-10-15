@@ -6,9 +6,11 @@ export const useGenExplanation = () => {
   const topic = useMediaAssetStore((state) => state.initialCreateVideoData.topic);
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
   const topicDetail = useMediaAssetStore((state) => state.initialCreateVideoData.topicDetail);
+  const videoExplanation = useMediaAssetStore((state) => state.initialCreateVideoData.videoExplanation);
+
+  const setVideoExplanation = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [explanation, setExplanation] = useState<string>("");
 
   const GenerateExplanation = async () => {
     setLoading(true);
@@ -20,7 +22,7 @@ export const useGenExplanation = () => {
         language,
       });
 
-      setExplanation(response.data.explanation);
+      setVideoExplanation("videoExplanation", response.data.explanation);
     } catch (error) {
       console.log(error);
     } finally {
@@ -28,5 +30,5 @@ export const useGenExplanation = () => {
     }
   };
 
-  return { loading, explanation, GenerateExplanation };
+  return { loading, explanation: videoExplanation, GenerateExplanation };
 };

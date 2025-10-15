@@ -19,16 +19,7 @@ export default function EditorHeader() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { project } = useProjectStore();
   const { media } = useMediaStore();
-  const {
-    jobId,
-    progress,
-    status,
-    error,
-    outputPath,
-    subscribeToJob,
-    cancelJob,
-    resetState,
-  } = useExportProgress();
+  const { jobId, progress, status, error, outputPath, subscribeToJob, cancelJob, resetState } = useExportProgress();
 
   const router = useRouter();
 
@@ -43,6 +34,41 @@ export default function EditorHeader() {
     setLoading(false);
   };
 
+  // Upload blob/data URLs to backend and get HTTP URL
+  const uploadIfNeeded = async (url: string, apiBase: string, fallbackName: string) => {
+    if (!url) return url;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+    const res = await fetch(url);
+    const blob = await res.blob();
+
+    const form = new FormData();
+    form.append("file", blob, fallbackName);
+
+    const up = await fetch(`${apiBase}/video/upload`, { method: "POST", body: form });
+    if (!up.ok) throw new Error(`Asset upload failed: ${up.status}`);
+    const data = await up.json();
+    return data.url as string;
+  };
+
+  const resolveMediaForExport = async (mediaData: typeof media, apiBase: string) => {
+    const mediaElement = await Promise.all(
+      (mediaData.mediaElement || []).map(async (el, idx) => ({
+        ...el,
+        url: el.url ? await uploadIfNeeded(el.url, apiBase, `media-${idx}`) : el.url,
+      }))
+    );
+
+    const audioElement = await Promise.all(
+      (mediaData.audioElement || []).map(async (el, idx) => ({
+        ...el,
+        url: await uploadIfNeeded(el.url, apiBase, `audio-${idx}`),
+      }))
+    );
+
+    return { ...mediaData, mediaElement, audioElement };
+  };
+
   const handleExport = async () => {
     try {
       // reset state and open modal
@@ -50,21 +76,21 @@ export default function EditorHeader() {
       setExportModalOpen(true);
 
       // backend API endpoint
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-      // prepare data for video creation
+      // prepare data for video creation (resolve blob/data URLs first)
+      const resolvedMedia = await resolveMediaForExport(media, API_BASE_URL);
       const exportData = {
         project: {
           id: project.id,
           name: project.name,
         },
         media: {
-          projectDuration: media.projectDuration,
-          fps: media.fps,
-          textElement: media.textElement,
-          mediaElement: media.mediaElement,
-          audioElement: media.audioElement,
+          projectDuration: resolvedMedia.projectDuration,
+          fps: resolvedMedia.fps,
+          textElement: resolvedMedia.textElement,
+          mediaElement: resolvedMedia.mediaElement,
+          audioElement: resolvedMedia.audioElement,
         },
       };
 
@@ -93,11 +119,7 @@ export default function EditorHeader() {
       }
     } catch (error) {
       console.error("Export failed:", error);
-      alert(
-        `Video export failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      alert(`Video export failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       setExportModalOpen(false);
     }
   };
@@ -119,13 +141,7 @@ export default function EditorHeader() {
     {
       icon: <Menu size={18} />,
       label: "Menu",
-      children: (
-        <Dropdown
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          dropdownItems={MenuItem}
-        />
-      ),
+      children: <Dropdown isOpen={isOpen} setIsOpen={setIsOpen} dropdownItems={MenuItem} />,
       onClick: () => {
         setIsOpen(!isOpen);
       },
@@ -166,23 +182,14 @@ export default function EditorHeader() {
           ))}
         </div>
 
-        <span className="text-white text-sm mr-4">
-          {project.id ? project.name : "Loading..."}
-        </span>
+        <span className="text-white text-sm mr-4">{project.id ? project.name : "Loading..."}</span>
 
         <div className="flex items-center gap-2">
           {HeaderRightButton.map((button) => (
-            <Button
-              variant="dark"
-              key={button.label}
-              onClick={button.onClick}
-              disabled={button.disabled}
-            >
+            <Button variant="dark" key={button.label} onClick={button.onClick} disabled={button.disabled}>
               <div className="flex items-center gap-2">
                 {button.icon}
-                {button.disabled && button.label === "Export"
-                  ? "Exporting..."
-                  : button.label}
+                {button.disabled && button.label === "Export" ? "Exporting..." : button.label}
               </div>
             </Button>
           ))}

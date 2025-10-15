@@ -39,9 +39,14 @@ const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
       from={fromFrame}
       durationInFrames={durationInFrames}
       name={`Text: ${textElement.text.substring(0, 20)}...`}
-      style={{ height: '100%', overflow: 'hidden' }}
+      style={{ height: '100%', overflow: 'hidden', zIndex: 1000 }}
     >
-      <AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          zIndex: 1000,
+          pointerEvents: 'none',
+        }}
+      >
         <div
           style={{
             position: 'absolute',
@@ -247,15 +252,6 @@ export const VideoEditor: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: 'black' }}>
       <GlobalFonts />
-      {/* 텍스트 요소 렌더링 */}
-      {inputProps.media?.textElement?.map((textElement) => (
-        <TextSequence
-          key={textElement.id}
-          textElement={textElement}
-          fps={fps}
-        />
-      ))}
-
       {/* 미디어 요소 렌더링 */}
       {inputProps.media?.mediaElement?.map((mediaElement) => {
         if (mediaElement.type === 'image') {
@@ -284,6 +280,15 @@ export const VideoEditor: React.FC = () => {
         <AudioSequence
           key={audioElement.id}
           audioElement={audioElement}
+          fps={fps}
+        />
+      ))}
+
+      {/* 텍스트 요소 렌더링 (맨 마지막에) */}
+      {inputProps.media?.textElement?.map((textElement) => (
+        <TextSequence
+          key={textElement.id}
+          textElement={textElement}
           fps={fps}
         />
       ))}

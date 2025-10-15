@@ -23,6 +23,7 @@ import { createAudioElement } from "@/shared/lib/audioElementFactory";
 import { convertSRTToTextElements } from "@/shared/lib/srtUtils";
 import { parseSRTContent } from "@/shared/lib/srtUtils";
 import { ProjectPersistenceService } from "@/shared/lib/projectPersistence";
+import { useState } from "react";
 
 export default function CreateMediaAssetPage() {
   const router = useRouter();
@@ -36,11 +37,23 @@ export default function CreateMediaAssetPage() {
   const addMediaElements = useMediaStore((s) => s.addMediaElements);
   const addAudioElement = useMediaStore((s) => s.addAudioElement);
   const addTextElement = useMediaStore((s) => s.addTextElement);
+  const clearInitElementsInLanes = useMediaStore((s) => s.clearInitElementsInLanes);
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateVideo = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
     const mediaLaneId = activeLaneByType.Media;
     const audioLaneId = activeLaneByType.Audio;
     const textLaneId = activeLaneByType.Text;
+
+    // 생성 단계 요소만 제거하고 재적용
+    clearInitElementsInLanes([
+      { type: "media", laneId: mediaLaneId },
+      { type: "audio", laneId: audioLaneId },
+      { type: "text", laneId: textLaneId },
+    ]);
 
     // 1) 이미지 요소 추가
     const convertedImageElements: MediaElement[] = [];
@@ -77,6 +90,7 @@ export default function CreateMediaAssetPage() {
     // 4) 저장 후 에디터로 이동
     await ProjectPersistenceService.saveCurrentProject();
     router.push(`/edits/${projectId}`);
+    setIsGenerating(false);
   };
 
   return (
@@ -111,7 +125,7 @@ export default function CreateMediaAssetPage() {
           <VideoExplanation />
 
           {/* Generate Video */}
-          <Button className="w-full mt-4" onClick={handleGenerateVideo}>
+          <Button className="w-full mt-4" onClick={handleGenerateVideo} disabled={isGenerating}>
             Generate Video
           </Button>
         </div>

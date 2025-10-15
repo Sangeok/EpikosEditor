@@ -37,6 +37,7 @@ export const useGenVideoImage = ({
                 endTime: imageScript[index].endTime ?? 0,
                 duration: imageScript[index].duration ?? 0,
                 type: imageScript[index].type ?? "",
+                isCreated: true,
               }
             : item
         );
@@ -49,6 +50,7 @@ export const useGenVideoImage = ({
           endTime: imageScript[index].endTime ?? 0,
           duration: imageScript[index].duration ?? 0,
           type: imageScript[index].type ?? "",
+          isCreated: true,
         };
         console.log("imageUrlData", imageUrlData);
         const updatedImageUrl: ImageDataType[] = [...imageData, imageUrlData];
