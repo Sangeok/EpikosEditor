@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import * as path from 'path';
 import { VideoService } from './video.service';
 
 @Injectable()
@@ -82,10 +83,17 @@ export class VideoGateway implements OnGatewayConnection, OnGatewayDisconnect {
   sendCompleted(jobId: string, outputPath: string) {
     const clients = this.jobSockets.get(jobId);
     if (clients) {
+      const filename = path.basename(outputPath);
+      const port = process.env.PORT ?? 8080;
+      const base = process.env.API_BASE_URL || `http://localhost:${port}`;
+      const downloadUrl = `${base}/video/download/${filename}`;
+
       clients.forEach((clientId) => {
         this.server.to(clientId).emit('completed', {
           jobId,
           outputPath,
+          filename,
+          downloadUrl,
         });
       });
       this.jobSockets.delete(jobId);

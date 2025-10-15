@@ -9,6 +9,8 @@ export interface ExportProgressState {
   status: "idle" | "exporting" | "completed" | "error";
   error?: string;
   outputPath?: string;
+  filename?: string;
+  downloadUrl?: string;
 }
 
 export const useExportProgress = () => {
@@ -27,8 +29,7 @@ export const useExportProgress = () => {
       return socketRef.current;
     }
 
-    const API_BASE_URL =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     const socket = io(API_BASE_URL, {
       transports: ["websocket"],
       autoConnect: true,
@@ -54,7 +55,7 @@ export const useExportProgress = () => {
       }));
     });
 
-    socket.on("completed", (data: { jobId: string; outputPath: string }) => {
+    socket.on("completed", (data: { jobId: string; outputPath: string; filename?: string; downloadUrl?: string }) => {
       console.log("내보내기 완료:", data);
       setState((prev) => ({
         ...prev,
@@ -62,6 +63,8 @@ export const useExportProgress = () => {
         progress: 100,
         status: "completed",
         outputPath: data.outputPath,
+        filename: data.filename,
+        downloadUrl: data.downloadUrl,
       }));
     });
 
@@ -87,6 +90,8 @@ export const useExportProgress = () => {
       status: "idle",
       error: undefined,
       outputPath: undefined,
+      filename: undefined,
+      downloadUrl: undefined,
     });
   }, []);
 

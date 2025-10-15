@@ -19,7 +19,8 @@ export default function EditorHeader() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { project } = useProjectStore();
   const { media } = useMediaStore();
-  const { jobId, progress, status, error, outputPath, subscribeToJob, cancelJob, resetState } = useExportProgress();
+  const { jobId, progress, status, error, outputPath, filename, downloadUrl, subscribeToJob, cancelJob, resetState } =
+    useExportProgress();
 
   const router = useRouter();
 
@@ -204,6 +205,8 @@ export default function EditorHeader() {
         status={status}
         error={error}
         outputPath={outputPath}
+        filename={filename}
+        downloadUrl={downloadUrl}
         cancel={handleCancel}
       />
     </header>

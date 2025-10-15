@@ -6,11 +6,16 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
+  Get,
+  Param,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Express } from 'express';
+import type { Response } from 'express';
 import { VideoService } from './video.service';
 import { VideoGateway } from './video.gateway';
 import type { VideoInputData } from '../types';
@@ -73,6 +78,20 @@ export class VideoController {
     const url = `${base}/uploads/${filename}`;
 
     return { success: true, url };
+  }
+
+  // 영상 다운로드 (강제 다운로드)
+  @Get('download/:filename')
+  downloadVideo(@Param('filename') filename: string, @Res() res: Response) {
+    const filePath = path.resolve(process.cwd(), 'uploads', filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        message: '파일을 찾을 수 없습니다.',
+      });
+    }
+
+    return res.download(filePath);
   }
 
   // // 영상 다운로드
