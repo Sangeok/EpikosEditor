@@ -1,5 +1,5 @@
 import { useMediaStore } from "@/entities/media/useMediaStore";
-import { createAudioElement } from "../../lib/audioElementFactory";
+import { createAudioElement } from "../../../../../../../../../shared/lib/audioElementFactory";
 import { UploadedAudio } from "../types";
 import { useTrackLaneStore } from "@/features/editFeatures/model/store/useTrackLaneStore";
 

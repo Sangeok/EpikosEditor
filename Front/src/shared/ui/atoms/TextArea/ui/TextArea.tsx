@@ -1,12 +1,17 @@
+import { cn } from "@/shared/lib/utils";
+
 interface TextAreaProps extends React.ComponentProps<"textarea"> {
   value: string;
 }
 
-export default function TextArea({ ...props }: TextAreaProps) {
+export default function TextArea({ className, ...props }: TextAreaProps) {
   return (
-    <div className="flex w-full h-[100px] justify-center p-2">
+    <div className="flex w-full min-h-[100px] justify-center text-sm">
       <textarea
-        className="w-full rounded-md border border-gray-600 p-2 focus:outline-none focus:ring-1 focus:ring-gray-400"
+        className={cn(
+          "w-full rounded-md border border-gray-600 p-2 focus:outline-none focus:ring-1 focus:ring-gray-400",
+          className
+        )}
         {...props}
       />
     </div>

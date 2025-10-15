@@ -6,7 +6,7 @@ import { useAudioPreview } from "./useAudioPreview";
 import { useAudioFileProcessor } from "./useAudioFileProcessor";
 import { AudioEditState, AudioEditActions, UploadedAudio } from "../types";
 import { useMediaStore } from "@/entities/media/useMediaStore";
-import { createAudioElement } from "../../lib/audioElementFactory";
+import { createAudioElement } from "../../../../../../../../../shared/lib/audioElementFactory";
 import { useTrackLaneStore } from "@/features/editFeatures/model/store/useTrackLaneStore";
 
 export function useAudioEdit(): {

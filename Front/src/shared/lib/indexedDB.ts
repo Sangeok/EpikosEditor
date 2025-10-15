@@ -1,5 +1,6 @@
 import { Media } from "@/entities/media/types";
 import { ProjectType } from "@/entities/project/types";
+import { CreateVideoType } from "@/entities/mediaAsset/types";
 
 export interface SavedProject {
   id: string;
@@ -8,9 +9,15 @@ export interface SavedProject {
   updatedAt: Date;
   projectData: ProjectType;
   mediaData: Media;
+  createVideoData: CreateVideoType;
   timelineData?: {
     currentTime: number;
     zoom: number;
+  };
+  // Persist session-volatile blobs (e.g., audio/tts) so we can recreate object URLs on load
+  blobData?: {
+    tts?: Blob | null;
+    audio?: Record<string, Blob>;
   };
 }
 

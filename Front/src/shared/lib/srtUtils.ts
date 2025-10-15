@@ -71,6 +71,7 @@ export function convertSRTToTextElements(parsedEntries: ParsedSRTEntry[]): TextE
     width: 900,
     height: 50,
     whiteSpace: "pre-wrap",
+    origin: "create-init",
   }));
 }
 

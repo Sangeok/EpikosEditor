@@ -17,6 +17,7 @@ export function createAudioElement(audioUrl: string, laneId: string): Promise<Au
         volume: 1,
         speed: 1,
         sourceStart: 0,
+        origin: "create-init",
       };
       resolve(audioElement);
     });

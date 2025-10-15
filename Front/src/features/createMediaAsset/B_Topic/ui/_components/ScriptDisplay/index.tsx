@@ -1,0 +1,37 @@
+import { useState } from "react";
+import { ScriptItem } from "./ScriptItem";
+import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
+
+export function ScriptDisplay() {
+  const videoScript = useMediaAssetStore((state) => state.initialCreateVideoData.videoScript);
+  const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
+
+  const [selectedScriptIndex, setSelectedScriptIndex] = useState<number | null>(null);
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const handleSelectVideoScript = (index: number) => {
+    setSelectedScriptIndex(index);
+    useMediaAssetStore.getState().setGenerateImageDataByFied("generateImageScript", videoScript[index]);
+  };
+
+  return (
+    <div className="mt-4">
+      <h2>Select the Script</h2>
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        {videoScript.map((script, index) => (
+          <ScriptItem
+            key={index}
+            script={script}
+            index={index}
+            language={language}
+            isSelected={selectedScriptIndex === index}
+            isHovered={hoveredIndex === index}
+            onSelect={() => handleSelectVideoScript(index)}
+            onHover={(isHovered) => setHoveredIndex(isHovered ? index : null)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
