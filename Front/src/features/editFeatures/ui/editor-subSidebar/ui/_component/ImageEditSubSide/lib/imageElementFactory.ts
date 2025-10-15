@@ -1,8 +1,8 @@
 import { MediaElement } from "@/entities/media/types";
 
 const DEFAULT_IMAGE_DURATION = 5;
-const DEFAULT_IMAGE_WIDTH = 400;
-const DEFAULT_IMAGE_HEIGHT = 300;
+const DEFAULT_IMAGE_WIDTH = 1080;
+const DEFAULT_IMAGE_HEIGHT = 1920;
 const DEFAULT_OPACITY = 1;
 const DEFAULT_ROTATION = "0deg";
 const DEFAULT_VISIBILITY = "visible" as const;

@@ -49,6 +49,8 @@ export const ImageWithFade = ({ imageElement, durationInFrames, fps }: ImageWith
           maxWidth: "100%",
           maxHeight: "100%",
           objectFit: "contain",
+          width: "1080px",
+          height: "1920px",
         }}
         src={imageElement.url || ""}
         alt={"image"}
