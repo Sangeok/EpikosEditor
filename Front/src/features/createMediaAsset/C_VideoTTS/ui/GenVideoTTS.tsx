@@ -17,7 +17,7 @@ export default function GenVideoTTS() {
 
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
   const selectedVideoScript = useMediaAssetStore(
-    (state) => state.initialCreateVideoData.generateImage.generateImageScript
+    (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
   );
   const ttsUrl = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrl);
 
