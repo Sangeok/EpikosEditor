@@ -1,6 +1,106 @@
 import { generateScript } from "@/shared/lib/AiModel";
 import { NextResponse } from "next/server";
 
+const SCRIPT_PROMPT_INTRODUCTION_PERSON_EN = `
+You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 40 second introductions of remarkable people.
+Write two different scripts for a 40 second video.
+
+Topic: {person name}
+
+Guidelines:
+- Do not add scene descriptions
+- Do not add anything in braces
+- Do not include greetings or introductions
+- Do not add "Narrator" or any speaker labels
+- Return plain text stories
+- Start with a powerful hook that grabs attention in the first 3 seconds
+- In one line, establish who this person is and why they matter today
+ - Include 2 to 3 vivid beats such as a challenge, a turning point, and an impact
+ - Add a mid rehook around 12 to 18 seconds with a brief question or twist
+ - State clearly why this matters to the viewer today in one line
+ - Use one concrete number or time span to build credibility
+ - Create one contrast beat such as past versus present or weakness versus strength
+ - Place the surprising or lesser known detail around 25 to 30 seconds
+ - Use second person lightly once or twice to deepen engagement
+ - Keep sentences short and punchy, and vary length with occasional medium sentences
+- Script length should fit within 40 seconds (approximately 95-110 words)
+- Conclude with the call to action: "If you watched until the end, hit the subscribe button"
+
+# Punctuation Rules:
+- ONLY use these punctuation marks: ".", ",", "!", "?", "..."
+- DO NOT use any other punctuation or special characters including:
+  * No asterisks (*)
+  * No dashes (-)
+  * No colons (:)
+  * No semicolons (;)
+  * No parentheses ()
+  * No quotation marks ("")
+  * No brackets []
+  * No braces {}
+
+Response format (JSON):
+{
+  "scripts": [
+    {
+      "content": "First script content here"
+    },
+    {
+      "content": "Second script content here"
+    }
+  ]
+}
+`;
+
+const SCRIPT_PROMPT_INTRODUCTION_ANIMAL_EN = `
+You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 40 second introductions of remarkable animals and species.
+Write two different scripts for a 40 second video.
+
+Topic: {animal name}
+
+Guidelines:
+- Do not add scene descriptions
+- Do not add anything in braces
+- Do not include greetings or introductions
+- Do not add "Narrator" or any speaker labels
+- Return plain text stories
+- Start with a powerful hook that grabs attention in the first 3 seconds
+- In one line, establish what this animal is and one defining trait
+- Include 2 to 3 vivid beats such as habitat, unique adaptation or behavior, and a survival challenge or role in the ecosystem
+- Add a mid rehook around 12 to 18 seconds with a brief question or twist
+- State clearly why this animal matters to the viewer today in one line
+- Use one concrete number, measurement, or time span to build credibility
+- Create one contrast beat such as myth versus reality, past versus present, or small versus powerful
+- Place the surprising or lesser known detail around 25 to 30 seconds
+- Use second person lightly once or twice to deepen engagement
+- Keep sentences short and punchy, and vary length with occasional medium sentences
+- Script length should fit within 40 seconds (approximately 95-110 words)
+- Conclude with the call to action: "If you watched until the end, hit the subscribe button"
+
+# Punctuation Rules:
+- ONLY use these punctuation marks: ".", ",", "!", "?", "..."
+- DO NOT use any other punctuation or special characters including:
+  * No asterisks (*)
+  * No dashes (-)
+  * No colons (:)
+  * No semicolons (;)
+  * No parentheses ()
+  * No quotation marks ("")
+  * No brackets []
+  * No braces {}
+
+Response format (JSON):
+{
+  "scripts": [
+    {
+      "content": "First script content here"
+    },
+    {
+      "content": "Second script content here"
+    }
+  ]
+}
+`;
+
 const SCRIPT_PROMPT_Philosophy_EN = `
 You are an expert in creating engaging YouTube Shorts scripts focused on philosophy. Your task is to craft compelling, motivational scripts that reinterpret famous philosophical quotes for modern audiences.
 Write two different scripts for a 35-second video.
@@ -431,14 +531,25 @@ export async function POST(req: Request) {
     } else {
       // PROMPT = SCRIPT_PROMPT_WhatIF_KO.replace("{what if scenario}", topicDetail).replace("{language}", language);
     }
+  } else if (topic === "Introduction Person") {
+    if (language === "English") {
+      PROMPT = SCRIPT_PROMPT_INTRODUCTION_PERSON_EN.replace("{person name}", topicDetail);
+    } else {
+      // PROMPT = SCRIPT_PROMPT_INTRODUCTION_PERSON_KO.replace("{person name}", topicDetail).replace(
+      //   "{language}",
+      //   language
+      // );
+    }
+  } else if (topic === "Introduction Animal") {
+    if (language === "English") {
+      PROMPT = SCRIPT_PROMPT_INTRODUCTION_ANIMAL_EN.replace("{animal name}", topicDetail);
+    } else {
+      // PROMPT = SCRIPT_PROMPT_INTRODUCTION_ANIMAL_KO.replace("{animal name}", topicDetail).replace(
+      //   "{language}",
+      //   language
+      // );
+    }
   }
-
-  // if (language === "English") {
-  //   PROMPT = SCRIPT_PROMPT_EN.replace("{topic}", topic);
-  // } else {
-  //   PROMPT = SCRIPT_PROMPT_KO.replace("{topic}", topic)
-  //     .replace("{language}", language)
-  // }
 
   const result = await generateScript.sendMessage(PROMPT as string);
 

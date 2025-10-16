@@ -77,6 +77,7 @@ export const useGenCaption = ({
 
         // SRT -> Scenes segmentation (sentence-based, dynamic count by total duration)
         const subs = parseSRT(translatedCaptionResponse.data.translatedText);
+        console.log("subs", subs);
         const scenes = segmentSRTBySentence(subs, { minDurSec: 2, minLastSec: 4 });
         setScenes(scenes);
 

@@ -22,6 +22,8 @@ export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImage
 
   const scenes = useCaptionStore((state) => state.scenes);
 
+  console.log("scenes", scenes);
+
   const setImageScript = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
   const GenerateScript = async () => {

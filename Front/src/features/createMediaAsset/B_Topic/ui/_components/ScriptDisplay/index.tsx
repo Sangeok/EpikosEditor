@@ -12,7 +12,7 @@ export function ScriptDisplay() {
 
   const handleSelectVideoScript = (index: number) => {
     setSelectedScriptIndex(index);
-    useMediaAssetStore.getState().setGenerateImageDataByFied("generateImageScript", videoScript[index]);
+    useMediaAssetStore.getState().setGenerateImageDataByFied("selectedVideoScript", videoScript[index]);
   };
 
   return (

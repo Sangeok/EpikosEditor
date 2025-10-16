@@ -90,6 +90,47 @@ export function buildSentenceSubs(subs: SrtItem[]): SrtItem[] {
   return sentences.sort((a, b) => a.start - b.start);
 }
 
+function forceSplitBySentences(sentenceSubs: SrtItem[], minScenes: number): ImageScene[] {
+  if (!sentenceSubs.length || minScenes <= 1) return [];
+
+  const tFirst = sentenceSubs[0].start;
+  const tLast = sentenceSubs[sentenceSubs.length - 1].end;
+
+  const n = sentenceSubs.length;
+  const base = Math.floor(n / minScenes);
+  const rem = n % minScenes;
+
+  let idx = 0;
+  const scenes: ImageScene[] = [];
+
+  for (let i = 0; i < minScenes; i++) {
+    const size = base + (i < rem ? 1 : 0);
+    const slice = sentenceSubs.slice(idx, idx + size);
+    idx += size;
+
+    if (!slice.length) continue;
+
+    const startTime = fixed3(slice[0].start);
+    const endTime = fixed3(slice[slice.length - 1].end);
+    const text = slice
+      .map((s) => s.text)
+      .join(" ")
+      .trim();
+
+    scenes.push({
+      id: `scene_${i + 1}`,
+      startTime,
+      endTime,
+      duration: fixed3(endTime - startTime),
+      type: "image",
+      text,
+    });
+  }
+
+  const normalized = normalizeScenes(scenes, tFirst, tLast);
+  return normalized.map((s, i) => ({ ...s, id: `scene_${i + 1}` }));
+}
+
 function decideTargetCount(totalDur: number, preferred: 4 | 5 = 5, minPerScene = 4): 4 | 5 {
   const est = totalDur / preferred;
   return (est < minPerScene ? 4 : preferred) as 4 | 5;
@@ -198,6 +239,7 @@ export function segmentSRTBySentence(
 
   const minDurSec = opts?.minDurSec ?? 2;
   const minLastSec = opts?.minLastSec ?? 4;
+  const minScenes = 3; // 최소 3개 보장
 
   const tFirst = sentenceSubs[0].start;
   const tLast = sentenceSubs[sentenceSubs.length - 1].end;
@@ -277,6 +319,11 @@ export function segmentSRTBySentence(
       prev.duration = fixed3(prev.endTime - prev.startTime);
       scenes.pop();
     }
+  }
+
+  // 최소 3개 보장 폴백: 문장 단위로 강제 3등분
+  if (scenes.length < minScenes && sentenceSubs.length >= minScenes) {
+    return forceSplitBySentences(sentenceSubs, minScenes);
   }
 
   const normalized = normalizeScenes(scenes, tFirst, tLast);
