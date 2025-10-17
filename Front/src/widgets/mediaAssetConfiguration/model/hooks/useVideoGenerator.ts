@@ -34,6 +34,7 @@ export function useVideoGenerator() {
   const addAudioElement = useMediaStore((s) => s.addAudioElement);
   const addTextElement = useMediaStore((s) => s.addTextElement);
   const clearInitElementsInLanes = useMediaStore((s) => s.clearInitElementsInLanes);
+  const setUseMediaAsset = useMediaStore((s) => s.setUseMediaAsset);
 
   /**
    * 미디어 레인에서 기존 초기화 요소 제거
@@ -119,6 +120,7 @@ export function useVideoGenerator() {
       addImageElements();
       await addAudioElements();
       addCaptionElements();
+      setUseMediaAsset(true);
       await saveAndNavigateToEditor();
     } finally {
       setIsGenerating(false);

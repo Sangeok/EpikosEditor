@@ -46,6 +46,8 @@ The revised prompt maintains all the effective elements from the previous versio
 export async function POST(request: NextRequest) {
   const { topic, topicDetail, language } = await request.json();
 
+  console.log("language", language);
+
   const PROMPT = SCRIPT_PROMPT.replace("{topic}", topic)
     .replace("{topicDetail}", topicDetail)
     .replace("{language}", language);

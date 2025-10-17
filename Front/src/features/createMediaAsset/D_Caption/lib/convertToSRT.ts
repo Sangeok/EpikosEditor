@@ -115,6 +115,76 @@ const convertWithSentences = (words: Word[], paragraphs: Paragraph[]) => {
   return srtContent.trim();
 };
 
+// 한국어 분할을 위한 보조 상수/함수들
+const EPS = 0.02; // 타이밍 비교 허용 오차(초)
+const MIN_SEGMENT_DURATION = 0.8; // 세그먼트 최소 길이(초)
+const MAX_SEGMENT_DURATION = 4.5; // 세그먼트 최대 길이(초)
+const MIN_SEGMENT_CHARS = 6; // 세그먼트 최소 문자수(가독성 가드)
+
+// 담화 표지(전환/인과/구조/예시 등)
+const SOFT_BOUNDARY_MARKERS = new Set<string>([
+  "그리고",
+  "또한",
+  "게다가",
+  "더불어",
+  "뿐만 아니라",
+  "하지만",
+  "그러나",
+  "반면에",
+  "다만",
+  "그럼에도",
+  "오히려",
+  "그래서",
+  "따라서",
+  "그러므로",
+  "결과적으로",
+  "결국",
+  "이로써",
+  "즉",
+  "다시 말해",
+  "말하자면",
+  "요컨대",
+  "쉽게 말해",
+  "예를 들어",
+  "예컨대",
+  "이를테면",
+  "먼저",
+  "다음으로",
+  "이어서",
+  "한편",
+  "마지막으로",
+  "요약하면",
+  "결론적으로",
+  "그렇다면",
+  "그러면",
+  "이제",
+  "자",
+  "특히",
+  "무엇보다",
+  "바로",
+  "핵심은",
+  "첫째",
+  "둘째",
+  "셋째",
+]);
+
+const stripRightQuotes = (s: string) => s.replace(/[\)"'”’\]\}]+$/u, "");
+const getTokenText = (w: Word) => (w.punctuated_word ?? w.word ?? "").trim();
+const hasHardPunctuation = (t: string) => /[.?!…‽]$|[，。、]$/u.test(stripRightQuotes(t));
+const isEndingEomi = (t: string) => /(다|요|니다|네요|군요|죠|랍니다|일까요|할게요)$/.test(stripRightQuotes(t));
+
+const isSemanticBoundaryKorean = (curr: Word, next?: Word) => {
+  const token = getTokenText(curr);
+  const base = stripRightQuotes(token);
+  const gap = next ? next.start - curr.end : 0;
+
+  // 콤마는 과분절 방지를 위해 최소 간격 필요
+  const commaBoundary = /[,，]$/.test(token) && gap >= 0.2;
+  const soft = SOFT_BOUNDARY_MARKERS.has(base) && gap >= 0.3; // 담화 표지는 말간격이 있을 때만 분할
+
+  return hasHardPunctuation(token) || isEndingEomi(base) || commaBoundary || soft;
+};
+
 // (Korean) 문장 정보를 활용하여 '.' 또는 ',' 기준으로만 분할하는 함수
 const convertWithSentencesKorean = (words: Word[], paragraphs: Paragraph[]) => {
   let srtContent = "";
@@ -122,7 +192,10 @@ const convertWithSentencesKorean = (words: Word[], paragraphs: Paragraph[]) => {
 
   paragraphs.forEach((paragraph) => {
     paragraph.sentences.forEach((sentence) => {
-      const sentenceWords = words.filter((word) => word.start >= sentence.start && word.end <= sentence.end);
+      // 허용 오차를 둔 매핑 + 정렬 안정화
+      const sentenceWords = words
+        .filter((word) => word.start >= sentence.start - EPS && word.end <= sentence.end + EPS)
+        .sort((a, b) => a.start - b.start);
 
       if (!sentenceWords || sentenceWords.length === 0) {
         // 단어 매핑이 없으면 문장 전체를 하나로 처리
@@ -141,17 +214,29 @@ const convertWithSentencesKorean = (words: Word[], paragraphs: Paragraph[]) => {
         currentSegment += (word.punctuated_word || word.word) + " ";
         endTime = word.end;
 
-        const punct = word.punctuated_word || "";
-        const isBoundary = punct.endsWith(".") || punct.endsWith(",");
+        const nextWord = sentenceWords[index + 1];
+        const isBoundary = isSemanticBoundaryKorean(word, nextWord);
         const isLast = index === sentenceWords.length - 1;
+        const duration = endTime - startTime;
 
-        if (isBoundary || isLast) {
+        // 너무 길면 강제 분할, 너무 짧으면 보류(마지막은 항상 분할)
+        let shouldSplit = false;
+        if (isBoundary || isLast || duration > MAX_SEGMENT_DURATION) {
+          if (!isLast && (duration < MIN_SEGMENT_DURATION || currentSegment.trim().length < MIN_SEGMENT_CHARS)) {
+            shouldSplit = false;
+          } else {
+            shouldSplit = true;
+          }
+        }
+
+        if (shouldSplit) {
+          const safeEnd = endTime <= startTime ? startTime + EPS : endTime;
           const formattedStartTime = formatSRTTime(startTime);
-          const formattedEndTime = formatSRTTime(endTime);
+          const formattedEndTime = formatSRTTime(safeEnd);
           srtContent += `${subtitleIndex}\n${formattedStartTime} --> ${formattedEndTime}\n${currentSegment.trim()}\n\n`;
           subtitleIndex++;
           currentSegment = "";
-          startTime = endTime;
+          startTime = safeEnd;
         }
       });
     });

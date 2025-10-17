@@ -10,6 +10,8 @@ export const initialMedia: Media = {
   textElement: [],
   mediaElement: [],
   audioElement: [],
+
+  isUsingMediaAsset: false,
 };
 
 interface MediaStore {
@@ -47,6 +49,7 @@ interface MediaStore {
   updateMultipleAudioElements: (updates: Array<{ id: string; updates: Partial<AudioElement> }>) => void;
   splitAudioElement: (audioElementId: string, splitTime: number) => void;
   cloneAudioElement: (audioElementId: string) => string | null;
+  setUseMediaAsset: (isUsingMediaAsset: boolean) => void;
 }
 
 export const useMediaStore = create<MediaStore>((set, get) => ({
@@ -730,4 +733,6 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
     });
     return createdId;
   },
+
+  setUseMediaAsset: (isUsingMediaAsset: boolean) => set({ media: { ...get().media, isUsingMediaAsset } }),
 }));

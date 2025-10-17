@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Button from "@/shared/ui/atoms/Button/ui/Button";
-import { Download, Menu, MoveLeft, Save } from "lucide-react";
+import { Download, Info, Menu, MoveLeft, Save } from "lucide-react";
 import { useState } from "react";
 import Dropdown from "@/shared/ui/atoms/Dropdown/ui/Dropdown";
 import IconButton from "@/shared/ui/atoms/Button/ui/IconButton";
@@ -12,11 +12,13 @@ import { useProjectStore } from "@/entities/project/useProjectStore";
 import { useMediaStore } from "@/entities/media/useMediaStore";
 import { useExportProgress } from "@/widgets/Edit/ui/editor-header/model/hooks/useExportProgress";
 import ExportProgressModal from "@/features/exportProgress/ui/ExportProgressModal";
+import VideoInfoModal from "@/features/videoInfo/ui";
 
 export default function EditorHeader() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [videoInfoModalOpen, setVideoInfoModalOpen] = useState(false);
   const { project } = useProjectStore();
   const { media } = useMediaStore();
   const { jobId, progress, status, error, outputPath, filename, downloadUrl, subscribeToJob, cancelJob, resetState } =
@@ -125,6 +127,11 @@ export default function EditorHeader() {
     }
   };
 
+  const handleShowVideoInfo = () => {
+    console.log("handleShowVideoInfo");
+    setVideoInfoModalOpen(true);
+  };
+
   const handleCancel = () => {
     if (jobId) {
       cancelJob(jobId);
@@ -158,16 +165,24 @@ export default function EditorHeader() {
 
   const HeaderRightButton = [
     {
+      icon: <Info size={16} />,
+      label: "Info",
+      onClick: handleShowVideoInfo,
+      isShow: media.isUsingMediaAsset,
+    },
+    {
       icon: <Save size={16} />,
       label: "Save",
       onClick: handleQuickSave,
       disabled: loading,
+      isShow: true,
     },
     {
       icon: <Download size={16} />,
       label: "Export",
       onClick: handleExport,
       disabled: status === "exporting",
+      isShow: true,
     },
   ];
 
@@ -186,14 +201,17 @@ export default function EditorHeader() {
         <span className="text-white text-sm mr-4">{project.id ? project.name : "Loading..."}</span>
 
         <div className="flex items-center gap-2">
-          {HeaderRightButton.map((button) => (
-            <Button variant="dark" key={button.label} onClick={button.onClick} disabled={button.disabled}>
-              <div className="flex items-center gap-2">
-                {button.icon}
-                {button.disabled && button.label === "Export" ? "Exporting..." : button.label}
-              </div>
-            </Button>
-          ))}
+          {HeaderRightButton.map(
+            (button) =>
+              button.isShow && (
+                <Button variant="dark" key={button.label} onClick={button.onClick} disabled={button.disabled}>
+                  <div className="flex items-center gap-2">
+                    {button.icon}
+                    {button.disabled && button.label === "Export" ? "Exporting..." : button.label}
+                  </div>
+                </Button>
+              )
+          )}
         </div>
       </div>
 
@@ -209,6 +227,8 @@ export default function EditorHeader() {
         downloadUrl={downloadUrl}
         cancel={handleCancel}
       />
+
+      <VideoInfoModal open={videoInfoModalOpen} onClose={() => setVideoInfoModalOpen(false)} />
     </header>
   );
 }
