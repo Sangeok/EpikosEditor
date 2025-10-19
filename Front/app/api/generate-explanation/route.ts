@@ -1,6 +1,39 @@
 import { generateScript } from "@/shared/lib/AiModel";
 import { NextRequest, NextResponse } from "next/server";
 
+function extractJsonString(text: string): string {
+  if (!text) return text;
+  const trimmed = text.trim();
+  const codeBlockMatch = trimmed.match(/```(?:json|JSON)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+  const anyBlockMatch = trimmed.match(/```\s*([\s\S]*?)\s*```/);
+  if (anyBlockMatch) {
+    return anyBlockMatch[1].trim();
+  }
+  return trimmed;
+}
+
+function safeParseJson(text: string): any {
+  const stripped = extractJsonString(text);
+  try {
+    return JSON.parse(stripped);
+  } catch (e) {
+    const first = stripped.indexOf("{");
+    const last = stripped.lastIndexOf("}");
+    if (first !== -1 && last !== -1 && last > first) {
+      const candidate = stripped.slice(first, last + 1).trim();
+      try {
+        return JSON.parse(candidate);
+      } catch (_) {
+        // fall-through
+      }
+    }
+    throw e;
+  }
+}
+
 const SCRIPT_PROMPT = `
 You are a video content explanation specialist. Your role is to create clear and engaging explanations based on provided video topics and details.
 
@@ -46,6 +79,8 @@ The revised prompt maintains all the effective elements from the previous versio
 export async function POST(request: NextRequest) {
   const { topic, topicDetail, language } = await request.json();
 
+  console.log("language", language);
+
   const PROMPT = SCRIPT_PROMPT.replace("{topic}", topic)
     .replace("{topicDetail}", topicDetail)
     .replace("{language}", language);
@@ -54,5 +89,11 @@ export async function POST(request: NextRequest) {
 
   const response = result?.response?.text();
 
-  return NextResponse.json(JSON.parse(response));
+  try {
+    const parsed = safeParseJson(response as unknown as string);
+    return NextResponse.json(parsed);
+  } catch (err) {
+    console.error("Failed to parse JSON response from model", err);
+    return NextResponse.json({ error: "Invalid JSON from model", raw: response }, { status: 500 });
+  }
 }

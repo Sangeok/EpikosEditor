@@ -125,6 +125,7 @@ const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          height: '100%',
           opacity,
         }}
       >
@@ -135,6 +136,8 @@ const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
             maxWidth: '100%',
             maxHeight: '100%',
             objectFit: 'contain',
+            width: '1080px',
+            height: '1920px',
           }}
           src={mediaElement.url || ''}
           alt={'image'}

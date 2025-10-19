@@ -1,211 +1,68 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Button from "@/shared/ui/atoms/Button/ui/Button";
-import { Download, Menu, MoveLeft, Save } from "lucide-react";
-import { useState } from "react";
-import Dropdown from "@/shared/ui/atoms/Dropdown/ui/Dropdown";
-import IconButton from "@/shared/ui/atoms/Button/ui/IconButton";
-import { MenuItem } from "../constants/MenuItem";
-import { ProjectPersistenceService } from "@/shared/lib/projectPersistence";
 import { useProjectStore } from "@/entities/project/useProjectStore";
 import { useMediaStore } from "@/entities/media/useMediaStore";
-import { useExportProgress } from "@/widgets/Edit/ui/editor-header/model/hooks/useExportProgress";
 import ExportProgressModal from "@/features/exportProgress/ui/ExportProgressModal";
+import VideoInfoModal from "@/features/videoInfo/ui";
+import { useVideoExport } from "../model/hooks/useVideoExport";
+import { useEditorModals } from "../model/hooks/useEditorModals";
+import { HeaderLeftButtons } from "./_components/HeaderLeftButtons";
+import { HeaderRightButtons } from "./_components/HeaderRightButtons";
 
 export default function EditorHeader() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
-  const [exportModalOpen, setExportModalOpen] = useState(false);
   const { project } = useProjectStore();
   const { media } = useMediaStore();
-  const { jobId, progress, status, error, outputPath, subscribeToJob, cancelJob, resetState } = useExportProgress();
 
-  const router = useRouter();
-
-  const handleQuickSave = async () => {
-    setLoading(true);
-    try {
-      await ProjectPersistenceService.saveCurrentProject();
-      // TODO : add toast notification here
-    } catch (error) {
-      console.error("Failed to save project:", error);
-    }
-    setLoading(false);
-  };
-
-  // Upload blob/data URLs to backend and get HTTP URL
-  const uploadIfNeeded = async (url: string, apiBase: string, fallbackName: string) => {
-    if (!url) return url;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-
-    const res = await fetch(url);
-    const blob = await res.blob();
-
-    const form = new FormData();
-    form.append("file", blob, fallbackName);
-
-    const up = await fetch(`${apiBase}/video/upload`, { method: "POST", body: form });
-    if (!up.ok) throw new Error(`Asset upload failed: ${up.status}`);
-    const data = await up.json();
-    return data.url as string;
-  };
-
-  const resolveMediaForExport = async (mediaData: typeof media, apiBase: string) => {
-    const mediaElement = await Promise.all(
-      (mediaData.mediaElement || []).map(async (el, idx) => ({
-        ...el,
-        url: el.url ? await uploadIfNeeded(el.url, apiBase, `media-${idx}`) : el.url,
-      }))
-    );
-
-    const audioElement = await Promise.all(
-      (mediaData.audioElement || []).map(async (el, idx) => ({
-        ...el,
-        url: await uploadIfNeeded(el.url, apiBase, `audio-${idx}`),
-      }))
-    );
-
-    return { ...mediaData, mediaElement, audioElement };
-  };
+  const videoExport = useVideoExport();
+  const modals = useEditorModals();
 
   const handleExport = async () => {
     try {
-      // reset state and open modal
-      resetState();
-      setExportModalOpen(true);
-
-      // backend API endpoint
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-      // prepare data for video creation (resolve blob/data URLs first)
-      const resolvedMedia = await resolveMediaForExport(media, API_BASE_URL);
-      const exportData = {
-        project: {
-          id: project.id,
-          name: project.name,
-        },
-        media: {
-          projectDuration: resolvedMedia.projectDuration,
-          fps: resolvedMedia.fps,
-          textElement: resolvedMedia.textElement,
-          mediaElement: resolvedMedia.mediaElement,
-          audioElement: resolvedMedia.audioElement,
-        },
-      };
-
-      console.log("Exporting video with data:", exportData);
-
-      const response = await fetch(`${API_BASE_URL}/video/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(exportData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        console.log("Video creation started:", result.jobId);
-        // subscribe to progress via WebSocket
-        subscribeToJob(result.jobId);
-      } else {
-        throw new Error(result.message || "Video creation request failed");
-      }
+      modals.openExportModal();
+      await videoExport.startExport();
     } catch (error) {
-      console.error("Export failed:", error);
-      alert(`Video export failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-      setExportModalOpen(false);
+      alert(error instanceof Error ? error.message : "Video export failed");
+      modals.closeExportModal();
     }
   };
 
-  const handleCancel = () => {
-    if (jobId) {
-      cancelJob(jobId);
+  const handleExportModalClose = () => {
+    modals.closeExportModal();
+
+    const shouldResetExport = videoExport.isCompleted || videoExport.hasError;
+    if (shouldResetExport) {
+      videoExport.resetExport();
     }
   };
-
-  const handleModalClose = () => {
-    setExportModalOpen(false);
-    if (status === "completed" || status === "error") {
-      resetState();
-    }
-  };
-
-  const HeaderLeftButton = [
-    {
-      icon: <Menu size={18} />,
-      label: "Menu",
-      children: <Dropdown isOpen={isOpen} setIsOpen={setIsOpen} dropdownItems={MenuItem} />,
-      onClick: () => {
-        setIsOpen(!isOpen);
-      },
-    },
-    {
-      icon: <MoveLeft size={18} />,
-      label: "Previous",
-      onClick: () => {
-        router.back();
-      },
-    },
-  ];
-
-  const HeaderRightButton = [
-    {
-      icon: <Save size={16} />,
-      label: "Save",
-      onClick: handleQuickSave,
-      disabled: loading,
-    },
-    {
-      icon: <Download size={16} />,
-      label: "Export",
-      onClick: handleExport,
-      disabled: status === "exporting",
-    },
-  ];
 
   return (
     <header className="col-span-2 bg-black border-b border-white/20 px-4 py-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {HeaderLeftButton.map((button) => (
-            <IconButton key={button.label} onClick={button.onClick}>
-              {button.icon}
-              {button.children}
-            </IconButton>
-          ))}
-        </div>
+        <HeaderLeftButtons />
 
         <span className="text-white text-sm mr-4">{project.id ? project.name : "Loading..."}</span>
 
-        <div className="flex items-center gap-2">
-          {HeaderRightButton.map((button) => (
-            <Button variant="dark" key={button.label} onClick={button.onClick} disabled={button.disabled}>
-              <div className="flex items-center gap-2">
-                {button.icon}
-                {button.disabled && button.label === "Export" ? "Exporting..." : button.label}
-              </div>
-            </Button>
-          ))}
-        </div>
+        <HeaderRightButtons
+          showVideoInfo={media.isUsingMediaAsset}
+          onExportClick={handleExport}
+          isExporting={videoExport.isExporting}
+          openVideoInfoModal={modals.openVideoInfoModal}
+        />
       </div>
 
-      {/* Export Progress Modal */}
       <ExportProgressModal
-        open={exportModalOpen}
-        onClose={handleModalClose}
-        progress={progress}
-        status={status}
-        error={error}
-        outputPath={outputPath}
-        cancel={handleCancel}
+        open={modals.exportModalOpen}
+        onClose={handleExportModalClose}
+        progress={videoExport.progress}
+        status={videoExport.status}
+        error={videoExport.error}
+        outputPath={videoExport.outputPath}
+        filename={videoExport.filename}
+        downloadUrl={videoExport.downloadUrl}
+        cancel={videoExport.cancelExport}
       />
+
+      <VideoInfoModal open={modals.videoInfoModalOpen} onClose={modals.closeVideoInfoModal} />
     </header>
   );
 }

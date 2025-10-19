@@ -1,6 +1,92 @@
 import { generateImageScript } from "@/shared/lib/AiModel";
 import { NextResponse } from "next/server";
 
+const INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style for introducing a real animal or species: {animal facts}
+
+Global scene list (JSON): {scenesJson}
+
+Instructions:
+1) Produce EXACTLY {scenes.length} imagePrompt items, one per scene, in the SAME ORDER as the input scenes.
+2) Do NOT use scenes[i].text to create or influence the imagePrompt. Base every imagePrompt ONLY on the biological identity and natural context of {animal name}.
+3) Ensure a realistic, consistent depiction of {animal name} across all prompts:
+   - Species-accurate morphology (size, proportions), coloration/patterns, textures (fur/feather/scale/skin), sexual dimorphism and life stage (choose one and keep consistent)
+   - Typical behaviors, gait/pose, and ecological role
+   - Avoid anthropomorphism or stylized changes that alter species identity
+   - Apply {style} mainly to composition, lighting, textures, and background without changing the animal’s core appearance
+4) Each imagePrompt should include:
+   - Natural habitat and environmental background (biome, region, time of day, weather/atmosphere)
+   - The animal’s appearance, posture, behavior/action, and any group context (solitary, pair, herd, pack, etc.)
+   - Relevant objects or ecological interactions (prey/predators, nesting sites, plants, terrain features, water, etc.)
+   - Overall color tone or mood, plus distinctive aspects of the {style} style
+5) Keep each imagePrompt between 30-100 words.
+
+Scene metadata copy rules (do NOT use scenes' text to craft the imagePrompt):
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Important notes:
+- Do NOT include camera angle, lens, shot types, or other technical filming directions.
+- Do NOT include any content related to subscription requests.
+- Focus purely on descriptive visual content suitable for image generation.
+- If visual references vary across subspecies or seasonal coats, pick one consistent, plausible variant and maintain it across all prompts.
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>"
+  }
+]`;
+
+const INTRODUCTION_PERSON_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style for introducing a real person: {person name}
+
+Global scene list (JSON): {scenesJson}
+
+Instructions:
+1) Produce EXACTLY {scenes.length} imagePrompt items, one per scene, in the SAME ORDER as the input scenes.
+2) Do NOT use scenes[i].text to create or influence the imagePrompt. Base every imagePrompt ONLY on the identity and life/context of {person name}.
+3) Ensure a realistic, consistent likeness of {person name} across all prompts:
+   - Facial features, age, hairstyle, skin tone, facial structure, and other recognizable traits
+   - Typical attire and signature elements (if any)
+   - Avoid stylized or exaggerated changes to the person's facial identity
+   - Apply {style} mainly to composition, lighting, textures, and background without altering the person's identity
+4) Each imagePrompt should include:
+   - Environmental background relevant to the person's life/work/era (location, time, atmosphere)
+   - The person’s appearance, attire, expression, pose, and actions
+   - Supporting objects/symbols connected to achievements or context
+   - Overall color tone or mood, plus distinctive aspects of the {style} style
+5) Keep each imagePrompt between 30-100 words.
+
+Scene metadata copy rules (do NOT use scenes' text to craft the imagePrompt):
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Important notes:
+- Do NOT include camera angle, lens, shot types, or other technical filming directions.
+- Do NOT include any content related to subscription requests.
+- Focus purely on descriptive visual content suitable for image generation.
+- If public visual references for this person are limited, infer a plausible, neutral, and realistic depiction while keeping consistency across all prompts.
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>"
+  }
+]`;
+
 const PHILOSOPHY_SCRIPT_PROMPT = `Generate detailed image prompts in {style} style for philosophical quotes: {quote}
 
 Global scene list (JSON): {scenesJson}
@@ -144,6 +230,50 @@ Example (shortened, illustrative only):
   }
 ]`;
 
+const ART_INTERPRETATION_SCRIPT_PROMPT = `
+Generate ONE hyperrealistic FULL-VIEW artwork image prompt in {style} style that visually interprets: {artwork interpretation}
+
+Scene list (JSON): {scenesJson}
+
+Objective:
+- Output ONLY ONE image that shows the ENTIRE artwork in a single frame and remains visible for the whole video duration.
+
+Full-view and fidelity constraints:
+- Show the whole artwork at once with no cropping or partial framing. All essential edges and background structures must remain visible.
+- Preserve the original composition and spatial relationships: subject-to-frame scale, posture and gesture, object placement, background layout, negative space proportions, perspective, palette, and lighting.
+- Do NOT invent, remove, reposition, or re-pose any elements. No close-up, no zoom, no macro, no tight crop, no truncation.
+- Apply {style} only to enhance hyperrealistic materiality and believable light behavior, without altering the artwork’s identity.
+- Do NOT include any camera or filming terminology such as lens, angle, shot size, or zoom percentages.
+
+Interpretation integration:
+- Weave interpretive cues from scenesJson into this single full view using descriptive emphasis only.
+- Mention decisive features and meanings as they appear within the full composition rather than magnifying any region.
+
+imagePrompt content:
+- 60-120 words, concrete and precise about surface textures, edges, light falloff, color relationships, and symbolism at full-view scale.
+- No subscription or meta instructions.
+
+Output timing and metadata:
+- Return ONLY a JSON array with EXACTLY 1 object.
+- Set "startTime" to 0.
+- Set "endTime" to the "endTime" of the last item in scenesJson (or 0 if empty).
+- Set "duration" to endTime - 0.
+- Set "type" to "image".
+- Set "sceneContent" to the concatenation of all scenes[i].text in order, separated by a single space ("" if scenesJson is empty).
+
+Return ONLY a JSON array with EXACTLY 1 object using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "",
+    "startTime": 0,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "image"
+  }
+]
+`;
+
 export async function POST(req: Request) {
   const { style, script, language, topic, topicDetail, scenes } = await req.json();
 
@@ -183,6 +313,21 @@ export async function POST(req: Request) {
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length))
       .replaceAll("{language}", String(language ?? ""));
+  } else if (topic === "Introduction Person") {
+    PROMPT = INTRODUCTION_PERSON_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{person name}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Introduction Animal Facts") {
+    PROMPT = INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{animal facts}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Art Interpretation") {
+    PROMPT = ART_INTERPRETATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{artwork interpretation}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
   }
 
   console.log("PROMPT");

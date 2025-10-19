@@ -79,4 +79,5 @@ export interface Media {
   textElement: TextElement[];
   mediaElement: MediaElement[];
   audioElement: AudioElement[];
+  isUsingMediaAsset: boolean;
 }
