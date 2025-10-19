@@ -51,11 +51,11 @@ Response format (JSON):
 }
 `;
 
-const SCRIPT_PROMPT_INTRODUCTION_ANIMAL_EN = `
-You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 40 second introductions of remarkable animals and species.
+const SCRIPT_PROMPT_INTRODUCTION_ANIMAL_FACTS_EN = `
+You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 40 second introductions of remarkable animals and species, based on little-known facts.
 Write two different scripts for a 40 second video.
 
-Topic: {animal name}
+Animal facts: {animal facts}
 
 Guidelines:
 - Do not add scene descriptions
@@ -63,14 +63,14 @@ Guidelines:
 - Do not include greetings or introductions
 - Do not add "Narrator" or any speaker labels
 - Return plain text stories
-- Start with a powerful hook that grabs attention in the first 3 seconds
-- In one line, establish what this animal is and one defining trait
-- Include 2 to 3 vivid beats such as habitat, unique adaptation or behavior, and a survival challenge or role in the ecosystem
-- Add a mid rehook around 12 to 18 seconds with a brief question or twist
-- State clearly why this animal matters to the viewer today in one line
-- Use one concrete number, measurement, or time span to build credibility
+- Start with a powerful hook built directly from the provided fact to grab attention in the first 3 seconds
+- In one line, name the animal and explain why this fact matters or what it reveals about the animal
+- Include 2 to 3 vivid beats such as habitat, the adaptation or behavior behind the fact, and a survival challenge or role in the ecosystem
+- Add a mid rehook around 12 to 18 seconds with a brief question or twist that deepens curiosity about the fact
+- State clearly why this matters to the viewer today in one line (practical insight, wonder, conservation, or relevance)
+- Use one concrete number, measurement, or time span to build credibility (preferably tied to the fact)
 - Create one contrast beat such as myth versus reality, past versus present, or small versus powerful
-- Place the surprising or lesser known detail around 25 to 30 seconds
+- Place a surprising or lesser known detail related to the fact around 25 to 30 seconds
 - Use second person lightly once or twice to deepen engagement
 - Keep sentences short and punchy, and vary length with occasional medium sentences
 - Script length should fit within 40 seconds (approximately 95-110 words)
@@ -440,6 +440,59 @@ Please time yourself reading the final script aloud to verify it can be delivere
 }
 `;
 
+const SCRIPT_PROMPT_ART_INTERPRETATION_EN = `
+You are an expert viral YouTube Shorts scriptwriter who specializes in interpreting famous artworks for a general audience.
+Write two different scripts for a ~50 second video.
+
+Artwork: {artwork name}
+
+Goal:
+- Interpret the meaning of the artwork by analyzing its key visual elements and how they work together.
+- Keep it accurate, engaging, and easy to follow for non experts.
+
+Guidelines:
+- Do not add scene descriptions or camera directions
+- Do not add anything in braces
+- Do not include greetings or introductions
+- Do not add speaker labels or headings
+- Return plain text stories
+- Start with a strong hook in the first 3 to 4 seconds that frames a compelling question or claim about the artwork
+- Mention the artwork name once near the beginning
+- Identify and interpret 4 to 6 concrete elements such as composition, gaze, hands, background, light and shadow, color palette, perspective, symbolism, brushwork, or geometry
+- For each element, briefly explain what it is and what it means in the context of the artwork
+- Add one concise line of historical or cultural context if relevant
+- Include one mid rehook between 20 to 30 seconds that deepens curiosity
+- Use one specific detail or number to anchor credibility
+- Explain why this interpretation matters to today’s viewer in one line
+- Keep sentences short and varied for rhythm
+- Script length should fit within about 50 seconds (approximately 120 to 135 words)
+- Conclude with the call to action: "If you watched until the end, hit the subscribe button"
+
+Punctuation Rules:
+- ONLY use these punctuation marks: ".", ",", "!", "?", "..."
+- DO NOT use any other punctuation or special characters including:
+  * No asterisks (*)
+  * No dashes (-)
+  * No colons (:)
+  * No semicolons (;)
+  * No parentheses ()
+  * No quotation marks ("")
+  * No brackets []
+  * No braces {}
+
+Response format (JSON):
+{
+  "scripts": [
+    {
+      "content": "First script content here"
+    },
+    {
+      "content": "Second script content here"
+    }
+  ]
+}
+`;
+
 const SCRIPT_PROMPT_WhatIF_EN = `
 You are an expert viral YouTube Shorts scriptwriter specializing in "What If" series. Your task is to create compelling, viral-potential scripts around 45 seconds in length.
 
@@ -540,11 +593,20 @@ export async function POST(req: Request) {
       //   language
       // );
     }
-  } else if (topic === "Introduction Animal") {
+  } else if (topic === "Introduction Animal Facts") {
     if (language === "English") {
-      PROMPT = SCRIPT_PROMPT_INTRODUCTION_ANIMAL_EN.replace("{animal name}", topicDetail);
+      PROMPT = SCRIPT_PROMPT_INTRODUCTION_ANIMAL_FACTS_EN.replace("{animal facts}", topicDetail);
     } else {
       // PROMPT = SCRIPT_PROMPT_INTRODUCTION_ANIMAL_KO.replace("{animal name}", topicDetail).replace(
+      //   "{language}",
+      //   language
+      // );
+    }
+  } else if (topic === "Art Interpretation") {
+    if (language === "English") {
+      PROMPT = SCRIPT_PROMPT_ART_INTERPRETATION_EN.replace("{artwork name}", topicDetail);
+    } else {
+      // PROMPT = SCRIPT_PROMPT_ART_INTERPRETATION_KO.replace("{artwork name}", topicDetail).replace(
       //   "{language}",
       //   language
       // );

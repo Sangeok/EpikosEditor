@@ -9,7 +9,7 @@ interface MainTopicListProps {
 
 export function MainTopicList({ topic, setVideoTopic }: MainTopicListProps) {
   return (
-    <div className="flex ">
+    <div className="flex flex-wrap">
       {MainTopic.map((mainTopicItem, index) => (
         <Button
           onClick={() => {

@@ -1,8 +1,8 @@
 import { generateImageScript } from "@/shared/lib/AiModel";
 import { NextResponse } from "next/server";
 
-const INTRODUCTION_ANIMAL_SCRIPT_PROMPT = `
-Generate detailed image prompts in {style} style for introducing a real animal or species: {animal name}
+const INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style for introducing a real animal or species: {animal facts}
 
 Global scene list (JSON): {scenesJson}
 
@@ -230,6 +230,50 @@ Example (shortened, illustrative only):
   }
 ]`;
 
+const ART_INTERPRETATION_SCRIPT_PROMPT = `
+Generate ONE hyperrealistic FULL-VIEW artwork image prompt in {style} style that visually interprets: {artwork interpretation}
+
+Scene list (JSON): {scenesJson}
+
+Objective:
+- Output ONLY ONE image that shows the ENTIRE artwork in a single frame and remains visible for the whole video duration.
+
+Full-view and fidelity constraints:
+- Show the whole artwork at once with no cropping or partial framing. All essential edges and background structures must remain visible.
+- Preserve the original composition and spatial relationships: subject-to-frame scale, posture and gesture, object placement, background layout, negative space proportions, perspective, palette, and lighting.
+- Do NOT invent, remove, reposition, or re-pose any elements. No close-up, no zoom, no macro, no tight crop, no truncation.
+- Apply {style} only to enhance hyperrealistic materiality and believable light behavior, without altering the artwork’s identity.
+- Do NOT include any camera or filming terminology such as lens, angle, shot size, or zoom percentages.
+
+Interpretation integration:
+- Weave interpretive cues from scenesJson into this single full view using descriptive emphasis only.
+- Mention decisive features and meanings as they appear within the full composition rather than magnifying any region.
+
+imagePrompt content:
+- 60-120 words, concrete and precise about surface textures, edges, light falloff, color relationships, and symbolism at full-view scale.
+- No subscription or meta instructions.
+
+Output timing and metadata:
+- Return ONLY a JSON array with EXACTLY 1 object.
+- Set "startTime" to 0.
+- Set "endTime" to the "endTime" of the last item in scenesJson (or 0 if empty).
+- Set "duration" to endTime - 0.
+- Set "type" to "image".
+- Set "sceneContent" to the concatenation of all scenes[i].text in order, separated by a single space ("" if scenesJson is empty).
+
+Return ONLY a JSON array with EXACTLY 1 object using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "",
+    "startTime": 0,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "image"
+  }
+]
+`;
+
 export async function POST(req: Request) {
   const { style, script, language, topic, topicDetail, scenes } = await req.json();
 
@@ -274,9 +318,14 @@ export async function POST(req: Request) {
       .replaceAll("{person name}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Introduction Animal") {
-    PROMPT = INTRODUCTION_ANIMAL_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{animal name}", String(topicDetail))
+  } else if (topic === "Introduction Animal Facts") {
+    PROMPT = INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{animal facts}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Art Interpretation") {
+    PROMPT = ART_INTERPRETATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{artwork interpretation}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
   }
