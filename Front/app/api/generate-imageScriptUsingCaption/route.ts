@@ -274,6 +274,62 @@ Return ONLY a JSON array with EXACTLY 1 object using this schema (no extra text)
 ]
 `;
 
+const PSYCHOLOGY_EXPERIMENT_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style for a psychology experiment: {psychology experiment}
+
+Scene list (JSON): {scenesJson}
+
+Objective:
+- Identify the experiment from the name and summarize its core setup and mechanism.
+- Create images that closely match the experiment's real context, apparatus, roles, and environment.
+
+Instructions:
+1) Produce EXACTLY {scenes.length} imagePrompt items, one per scene, in the SAME ORDER as the input scenes.
+2) Use scenes[i].text as the narrative anchor for each imagePrompt; visualize that text faithfully within the accurate context of {psychology experiment}.
+3) Enforce experiment fidelity across all prompts:
+   - Setting: typical location and period for the experiment (e.g., university lab, mock prison, classroom).
+   - Roles: experimenter, participant, confederates, attire and props typical to the study.
+   - Apparatus: instruments specific to the experiment (e.g., shock console with labeled switches, comparison line cards, inflatable doll, uniforms and badges). Use generic descriptors; avoid brand names.
+   - Keep consistent identities of subjects, props, and room layout across scenes.
+4) Each imagePrompt must include:
+   - Environmental background and atmosphere appropriate to the experiment
+   - Subjects and their actions, expressions, and interactions
+   - Salient props/apparatus used in the experiment
+   - Overall color tone or mood, plus distinctive aspects of the {style} style
+   - Length between 30 and 100 words
+5) Do NOT include camera angles, lenses, or shot types. Do NOT include any subscription or meta content.
+6) Depict psychological tension responsibly without graphic harm or sensationalism.
+
+Scene metadata copy rules:
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>"
+  }
+]
+
+Example (shortened, illustrative only):
+[
+  {
+    "imagePrompt": "Small university lab room, a console with rows of labeled switches and meters on a plain desk, a participant in everyday clothes seated and looking uneasy, an authority figure in a neutral lab coat with a clipboard standing nearby, another person out of view behind a partition; muted institutional lighting, tense atmosphere; {style} textures emphasize the apparatus central to an obedience study while keeping realism and consistency.",
+    "sceneContent": "Volunteers believe they are giving electric shocks for a learning task.",
+    "startTime": 0,
+    "endTime": 10,
+    "duration": 10,
+    "type": "image"
+  }
+]
+`;
+
 export async function POST(req: Request) {
   const { style, script, language, topic, topicDetail, scenes } = await req.json();
 
@@ -326,6 +382,11 @@ export async function POST(req: Request) {
   } else if (topic === "Art Interpretation") {
     PROMPT = ART_INTERPRETATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
       .replaceAll("{artwork interpretation}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Psychology Experiment") {
+    PROMPT = PSYCHOLOGY_EXPERIMENT_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{psychology experiment}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
   }
