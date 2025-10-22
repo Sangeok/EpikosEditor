@@ -68,12 +68,15 @@ export const useGenCaption = ({
       const generatedSrtContent = convertToSRT(result, language);
 
       if (language === "Korean") {
+        console.log("오잉잉");
         const translatedCaptionResponse = await axios.post("/api/generate-translatedCaption", {
           text: generatedSrtContent,
           targetLanguage: "English",
         });
 
         setSrtContent(generatedSrtContent);
+
+        console.log("translatedCaptionResponse", translatedCaptionResponse.data);
 
         // SRT -> Scenes segmentation (sentence-based, dynamic count by total duration)
         const subs = parseSRT(translatedCaptionResponse.data.translatedText);
@@ -83,6 +86,7 @@ export const useGenCaption = ({
 
         setCaptions("captions", generatedSrtContent);
       } else if (language === "English") {
+        console.log("엥?");
         setSrtContent(generatedSrtContent);
 
         // SRT -> Scenes segmentation (sentence-based, dynamic count by total duration)
