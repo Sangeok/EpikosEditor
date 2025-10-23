@@ -10,12 +10,12 @@ interface VideoInfoModalProps {
 }
 
 export default function VideoInfoModal({ open, onClose }: VideoInfoModalProps) {
-  const { topic, topicDetail, generateImage, videoExplanation, imageData } = useCreateVideoStore(
+  const { topic, topicDetail, generateImage, videoExplanation, imageData, language } = useCreateVideoStore(
     (s) => s.initialCreateVideoData
   );
 
   const selectedScript = generateImage?.selectedVideoScript ?? null;
-  const selectedScriptText = selectedScript?.content ?? "";
+  const selectedScriptText = language === "English" ? selectedScript?.content : selectedScript?.translatedContent ?? "";
   const thumbnailUrl = imageData?.length ? imageData[0]?.url : "";
 
   return (
