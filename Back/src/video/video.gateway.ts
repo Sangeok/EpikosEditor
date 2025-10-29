@@ -91,8 +91,6 @@ export class VideoGateway implements OnGatewayConnection, OnGatewayDisconnect {
       clients.forEach((clientId) => {
         this.server.to(clientId).emit('completed', {
           jobId,
-          outputPath,
-          filename,
           downloadUrl,
         });
       });

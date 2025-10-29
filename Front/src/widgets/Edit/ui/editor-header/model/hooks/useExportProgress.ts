@@ -62,8 +62,6 @@ export const useExportProgress = () => {
         jobId: data.jobId,
         progress: 100,
         status: "completed",
-        outputPath: data.outputPath,
-        filename: data.filename,
         downloadUrl: data.downloadUrl,
       }));
     });

@@ -1,5 +1,4 @@
 import Button from "@/shared/ui/atoms/Button/ui/Button";
-import { MESSAGES } from "../../constants";
 import { ExportStatus } from "../../model/type";
 
 interface ActionButtonsProps {
@@ -19,9 +18,9 @@ export default function ActionButtons({ status, downloadUrl, onClose, onCancel }
   if (status === "completed") {
     return (
       <div className="flex w-full justify-between">
-        <Button onClick={onClose}>{MESSAGES.BUTTON_CLOSE}</Button>
+        <Button onClick={onClose}>Close</Button>
         <Button onClick={handleDownload} disabled={!downloadUrl}>
-          {MESSAGES.BUTTON_DOWNLOAD}
+          Download
         </Button>
       </div>
     );
@@ -30,7 +29,7 @@ export default function ActionButtons({ status, downloadUrl, onClose, onCancel }
   if (status === "error") {
     return (
       <div className="flex w-full justify-end">
-        <Button onClick={onClose}>{MESSAGES.BUTTON_CLOSE}</Button>
+        <Button onClick={onClose}>Close</Button>
       </div>
     );
   }
@@ -38,8 +37,8 @@ export default function ActionButtons({ status, downloadUrl, onClose, onCancel }
   if (status === "exporting") {
     return (
       <div className="flex justify-between w-full">
-        <Button onClick={onClose}>{MESSAGES.BUTTON_BACKGROUND}</Button>
-        <Button onClick={onCancel}>{MESSAGES.BUTTON_CANCEL}</Button>
+        <Button onClick={onClose}>Continue in background</Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     );
   }

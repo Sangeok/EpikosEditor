@@ -16,14 +16,3 @@ export const STATUS_CONFIG = {
     color: "text-red-400",
   },
 } as const;
-
-export const MESSAGES = {
-  SUCCESS: "Video has been successfully created!",
-  FILE_PATH_LABEL: "File path:",
-  DOWNLOAD_READY: "Ready to download",
-  PROGRESS_LABEL: "진행률",
-  BUTTON_CLOSE: "Close",
-  BUTTON_DOWNLOAD: "Download",
-  BUTTON_BACKGROUND: "Continue in background",
-  BUTTON_CANCEL: "Cancel",
-} as const;

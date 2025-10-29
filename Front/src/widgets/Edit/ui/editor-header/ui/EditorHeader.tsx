@@ -62,8 +62,6 @@ export default function EditorHeader() {
           progress={videoExport.progress}
           status={videoExport.status}
           error={videoExport.error}
-          outputPath={videoExport.outputPath}
-          filename={videoExport.filename}
           downloadUrl={videoExport.downloadUrl}
           cancel={videoExport.cancelExport}
         />

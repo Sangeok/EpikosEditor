@@ -108,8 +108,6 @@ export function useVideoExport() {
     progress: exportProgress.progress,
     status: exportProgress.status,
     error: exportProgress.error,
-    outputPath: exportProgress.outputPath,
-    filename: exportProgress.filename,
     downloadUrl: exportProgress.downloadUrl,
 
     // Computed states

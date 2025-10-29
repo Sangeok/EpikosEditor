@@ -94,24 +94,6 @@ export class VideoController {
     return res.download(filePath);
   }
 
-  // // 영상 다운로드
-  // @Get('download/:filename')
-  // downloadVideo(@Param('filename') filename: string, @Res() res: Response) {
-  //   const filePath = `./uploads/${filename}`;
-
-  //   if (!fs.existsSync(filePath)) {
-  //     return res.status(HttpStatus.NOT_FOUND).json({
-  //       message: '파일을 찾을 수 없습니다.',
-  //     });
-  //   }
-
-  //   res.setHeader('Content-Type', 'video/mp4');
-  //   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-
-  //   const fileStream = fs.createReadStream(filePath);
-  //   fileStream.pipe(res);
-  // }
-
   private async processVideoInBackground(
     jobId: string,
     videoData: VideoInputData,

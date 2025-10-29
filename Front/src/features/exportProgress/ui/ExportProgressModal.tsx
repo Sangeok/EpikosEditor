@@ -15,48 +15,19 @@ interface ExportProgressModalProps {
   progress: number;
   status: ExportStatus;
   error?: string;
-  outputPath?: string;
-  filename?: string;
   downloadUrl?: string;
   cancel: () => void;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-function buildDownloadUrl(downloadUrl?: string, filename?: string, outputPath?: string): string | null {
-  if (downloadUrl) return downloadUrl;
-
-  if (filename) {
-    return `${API_BASE_URL}/video/download/${filename}`;
-  }
-
-  if (outputPath) {
-    const file = outputPath.split(/[\\\/]/).pop();
-    if (file) {
-      return `${API_BASE_URL}/video/download/${file}`;
-    }
-  }
-
-  return null;
-}
-
-// ===== 메인 컴포넌트 =====
 export default function ExportProgressModal({
   open,
   onClose,
   progress,
   status,
   error,
-  outputPath,
-  filename,
   downloadUrl,
   cancel,
 }: ExportProgressModalProps) {
-  const finalDownloadUrl = React.useMemo(
-    () => buildDownloadUrl(downloadUrl, filename, outputPath),
-    [downloadUrl, filename, outputPath]
-  );
-
   const handleCancel = async () => {
     await cancel();
     onClose();
@@ -77,11 +48,11 @@ export default function ExportProgressModal({
         {status === "error" && error && <ErrorDisplay error={error} />}
 
         {/* Success Message */}
-        {status === "completed" && <SuccessDisplay outputPath={outputPath} hasDownloadUrl={!!finalDownloadUrl} />}
+        {status === "completed" && <SuccessDisplay hasDownloadUrl={!!downloadUrl} />}
 
         {/* Action Buttons */}
         <div className="flex w-full">
-          <ActionButtons status={status} downloadUrl={finalDownloadUrl} onClose={onClose} onCancel={handleCancel} />
+          <ActionButtons status={status} downloadUrl={downloadUrl || null} onClose={onClose} onCancel={handleCancel} />
         </div>
       </div>
     </Dialog>
