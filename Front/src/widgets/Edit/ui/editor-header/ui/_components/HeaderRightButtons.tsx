@@ -19,8 +19,6 @@ export function HeaderRightButtons({
   isExporting,
   openVideoInfoModal,
 }: HeaderRightButtonsProps) {
-  const modals = useEditorModals();
-
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const handleQuickSave = async () => {
