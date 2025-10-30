@@ -3,18 +3,15 @@
 import { ImageDataType, ImageScriptType } from "@/entities/mediaAsset/types";
 import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import axios from "axios";
-import React from "react";
 
 export const useGenVideoImage = ({
   imageScript,
   setLoading,
   imageData,
-  setIsDoneCreateImage,
 }: {
   imageScript: ImageScriptType[];
   setLoading: (loading: boolean) => void;
   imageData: ImageDataType[];
-  setIsDoneCreateImage: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
 }) => {
   const setImageData = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
@@ -55,14 +52,6 @@ export const useGenVideoImage = ({
         console.log("imageUrlData", imageUrlData);
         const updatedImageUrl: ImageDataType[] = [...imageData, imageUrlData];
         setImageData("imageData", updatedImageUrl);
-      }
-
-      // 이미지 생성 완료 시 상태 업데이트
-      if (imagePrompt && result?.status === 200) {
-        setIsDoneCreateImage((prev) => ({
-          ...prev,
-          [index]: true,
-        }));
       }
     } catch (error) {
       console.log(error);

@@ -2,10 +2,15 @@
 
 import { CreateVideoField } from "@/entities/mediaAsset/types";
 import useCaptionStore from "@/entities/mediaAsset/useCaptionStore";
-import axios from "axios";
 import { useState } from "react";
 import { convertToSRT } from "../../lib/convertToSRT";
-import { parseSRT, segmentSRTBySentence } from "../../lib/sceneSegmentation";
+import { ERROR_MESSAGES } from "../constants";
+import {
+  fetchAudioFile,
+  generateCaptionsAPI,
+  translateCaption,
+  processSRT,
+} from "../utils";
 
 export const useGenCaption = ({
   ttsUrl,
@@ -16,92 +21,45 @@ export const useGenCaption = ({
   language: "English" | "Korean";
   setCaptions: (fieldName: CreateVideoField, captions: string) => void;
 }) => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [srtContent, setSrtContent] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [srtContent, setSrtContent] = useState("");
 
   const setScenes = useCaptionStore((state) => state.setScenes);
 
-  const GenerateCaptions = async () => {
+  const generateCaptions = async () => {
+    // 유효성 검사
     if (!ttsUrl) {
-      alert("Please generate TTS first.");
+      alert(ERROR_MESSAGES.NO_TTS);
       return;
     }
 
     setLoading(true);
+
     try {
-      // 1. Blob URL에서 오디오 파일 가져오기
-      const response = await fetch(ttsUrl);
+      // 1. 오디오 파일 가져오기
+      const audioFile = await fetchAudioFile(ttsUrl);
 
-      if (!response.ok) {
-        throw new Error(`오디오 파일을 가져오는데 실패했습니다: ${response.status}`);
-      }
+      // 2. 자막 생성
+      const result = await generateCaptionsAPI(audioFile, language);
+      const generatedSRT = convertToSRT(result, language);
 
-      const blob = await response.blob();
+      // 3. 즉시 상태 업데이트 (빠른 UI 피드백)
+      setSrtContent(generatedSRT);
 
-      // 2. 파일명 생성
-      const fileName = "audio.mp3";
-
-      // 3. Blob을 File 객체로 변환
-      const fileType = blob.type || "audio/mpeg";
-      const audioFile = new File([blob], fileName, { type: fileType });
-
-      // 4. FormData 생성 및 파일 추가
-      const formData = new FormData();
-      formData.append("audio", audioFile);
-      formData.append("language", language);
-
-      // 5. FormData를 서버로 전송
-      const captionResponse = await axios.post("/api/generate-captions", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (captionResponse.status < 200 || captionResponse.status >= 300) {
-        throw new Error(`변환 요청이 실패했습니다: ${captionResponse.status}`);
-      }
-
-      // 6. 결과 처리
-      const result = captionResponse.data;
-      const transcription = result.results?.channels[0]?.alternatives[0]?.transcript || "";
-
-      const generatedSrtContent = convertToSRT(result, language);
-
-      console.log("generatedSrtContent", generatedSrtContent);
+      // 4. 언어별 처리
+      let contentToProcess = generatedSRT;
 
       if (language === "Korean") {
-        console.log("오잉잉");
-        const translatedCaptionResponse = await axios.post("/api/generate-translatedCaption", {
-          text: generatedSrtContent,
-          targetLanguage: "English",
-        });
-
-        setSrtContent(generatedSrtContent);
-
-        console.log("translatedCaptionResponse", translatedCaptionResponse.data);
-
-        // SRT -> Scenes segmentation (sentence-based, dynamic count by total duration)
-        const subs = parseSRT(translatedCaptionResponse.data.translatedText);
-        console.log("subs", subs);
-        const scenes = segmentSRTBySentence(subs, { minDurSec: 2, minLastSec: 4 });
-        setScenes(scenes);
-
-        setCaptions("captions", generatedSrtContent);
-      } else if (language === "English") {
-        console.log("엥?");
-        setSrtContent(generatedSrtContent);
-        console.log("generatedSrtContent", generatedSrtContent);
-
-        // SRT -> Scenes segmentation (sentence-based, dynamic count by total duration)
-        const subs = parseSRT(generatedSrtContent);
-        const scenes = segmentSRTBySentence(subs, { minDurSec: 2, minLastSec: 4 });
-        setScenes(scenes);
-
-        setCaptions("captions", generatedSrtContent);
+        // 한국어면 번역 필요
+        contentToProcess = await translateCaption(generatedSRT, "English");
       }
 
-      // 7. 자막 설정
-      // setCaptions(CreateVideoField.CAPTIONS, transcription);
+      // 5. SRT 파싱 및 씬 생성
+      const { scenes } = processSRT(contentToProcess);
+
+      // 6. 나머지 상태 업데이트
+      setScenes(scenes);
+      setCaptions("captions", generatedSRT);
     } catch (error) {
       console.error("Error generating captions:", error);
     } finally {
@@ -109,5 +67,5 @@ export const useGenCaption = ({
     }
   };
 
-  return { loading, srtContent, GenerateCaptions };
+  return { loading, srtContent, generateCaptions };
 };
