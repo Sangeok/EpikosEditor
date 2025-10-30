@@ -3,14 +3,12 @@
 import useCaptionStore from "@/entities/mediaAsset/useCaptionStore";
 import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import axios from "axios";
-import { useState } from "react";
 
 interface GenImageScriptProps {
-  setIsDoneCreateImage: (isDoneCreateImage: Record<number, boolean>) => void;
   setLoading: (loading: boolean) => void;
 }
 
-export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImageScriptProps) => {
+export const useGenImageScript = ({ setLoading }: GenImageScriptProps) => {
   const imageScript = useMediaAssetStore((state) => state.initialCreateVideoData.imageScript);
   const topic = useMediaAssetStore((state) => state.initialCreateVideoData.topic);
   const topicDetail = useMediaAssetStore((state) => state.initialCreateVideoData.topicDetail);
@@ -46,13 +44,7 @@ export const useGenImageScript = ({ setIsDoneCreateImage, setLoading }: GenImage
         scenes,
       });
 
-      console.log("result", result?.data);
-
       setImageScript("imageScript", result?.data);
-
-      // 새 스크립트가 생성되면 이미지 생성 상태 초기화
-      const initialImageStatus = Object.fromEntries(Array.from({ length: result?.data.length }, (_, i) => [i, false]));
-      setIsDoneCreateImage(initialImageStatus);
     } catch (error) {
       console.log(error);
     } finally {

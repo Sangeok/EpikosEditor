@@ -12,7 +12,7 @@ export default function VideoCaption() {
   const ttsUrl = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrl);
   const setCaptions = useMediaAssetStore((state) => state.setCreateVideoDataByField);
 
-  const { loading, srtContent, GenerateCaptions } = useGenCaption({
+  const { loading, srtContent, generateCaptions } = useGenCaption({
     ttsUrl,
     language,
     setCaptions,
@@ -26,7 +26,7 @@ export default function VideoCaption() {
       </header>
 
       <div className="flex w-full justify-between gap-2">
-        <LoadingButton loading={loading} Content="Generate Captions" onClick={GenerateCaptions} className="mt-8" />
+        <LoadingButton loading={loading} Content="Generate Captions" onClick={generateCaptions} className="mt-8" />
 
         {srtContent && (
           <Button

@@ -10,8 +10,6 @@ export default function Preview() {
   const imageData = useMediaAssetStore((state) => state.initialCreateVideoData.imageData);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  console.log("imageData", imageData);
-
   // 이미지가 변경될 때 index 초기화
   useEffect(() => {
     setCurrentImageIndex(0);

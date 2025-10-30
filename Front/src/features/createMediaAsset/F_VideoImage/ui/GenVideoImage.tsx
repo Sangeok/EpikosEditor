@@ -7,26 +7,17 @@ import { LoadingButton } from "@/shared/ui/molecule/LoadingButton";
 
 export default function GenVideoImage() {
   const imageData = useMediaAssetStore((state) => state.initialCreateVideoData.imageData);
-  const selectedVideoScript = useMediaAssetStore(
-    (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
-  );
 
-  const [isDoneCreateImage, setIsDoneCreateImage] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const { imageScript, GenerateScript } = useGenImageScript({
-    setIsDoneCreateImage,
     setLoading,
   });
-
-  console.log("imageScript", imageScript);
-  console.log("videoScript", selectedVideoScript);
 
   const { GenerateImage } = useGenVideoImage({
     imageScript,
     setLoading,
     imageData,
-    setIsDoneCreateImage,
   });
 
   const hasVideoScript = imageScript?.length > 0;
