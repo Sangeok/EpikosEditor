@@ -1,6 +1,39 @@
 import { generateScript } from "@/shared/lib/AiModel";
 import { NextResponse } from "next/server";
 
+function extractJsonString(text: string): string {
+  if (!text) return text;
+  const trimmed = text.trim();
+  const codeBlockMatch = trimmed.match(/```(?:json|JSON)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+  const anyBlockMatch = trimmed.match(/```\s*([\s\S]*?)\s*```/);
+  if (anyBlockMatch) {
+    return anyBlockMatch[1].trim();
+  }
+  return trimmed;
+}
+
+function safeParseJson(text: string): any {
+  const stripped = extractJsonString(text);
+  try {
+    return JSON.parse(stripped);
+  } catch (e) {
+    const first = stripped.indexOf("{");
+    const last = stripped.lastIndexOf("}");
+    if (first !== -1 && last !== -1 && last > first) {
+      const candidate = stripped.slice(first, last + 1).trim();
+      try {
+        return JSON.parse(candidate);
+      } catch (_) {
+        // fall-through
+      }
+    }
+    throw e;
+  }
+}
+
 const SCRIPT_PROMPT_INTRODUCTION_PERSON_EN = `
 You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 40 second introductions of remarkable people.
 Write two different scripts for a 40 second video.
@@ -96,6 +129,60 @@ Response format (JSON):
     },
     {
       "content": "Second script content here"
+    }
+  ]
+}
+`;
+
+const SCRIPT_PROMPT_INTRODUCTION_PERSON_KO = `
+You are an expert viral YouTube Shorts scriptwriter who specializes in compelling 45 second introductions of remarkable people for global audiences.
+Write two different scripts for a 45 second video.
+
+Topic: {person name}
+
+Guidelines:
+- Write each script in English with natural spoken pacing
+- Do not add scene descriptions
+- Do not add anything in braces
+- Do not include greetings or introductions
+- Do not add "Narrator" or any speaker labels
+- Return plain text stories
+- Start with a powerful hook that grabs attention in the first 4 seconds
+- In one line, establish who this person is and why they matter today
+- Include 2 to 3 vivid beats such as a challenge, a turning point, and an impact
+- Add a mid rehook around 15 to 20 seconds with a brief question or twist
+- State clearly why this matters to the viewer today in one line
+- Use one concrete number or time span to build credibility
+- Create one contrast beat such as past versus present or weakness versus strength
+- Place the surprising or lesser known detail around 30 to 35 seconds
+- Use second person lightly once or twice to deepen engagement
+- Keep sentences short and punchy, and vary length with occasional medium sentences
+- Keep each English script within 95 to 110 words to fit a 45 second delivery
+- Translate each script to {language} and provide it in translatedContent. Ensure the translation preserves meaning and adapts the call to action naturally to {language}.
+Conclude with the call to action: "마지막까지 봤다면 구독 부탁드립니다."
+
+# Punctuation Rules:
+- ONLY use these punctuation marks: ".", ",", "!", "?", "..."
+- DO NOT use any other punctuation or special characters including:
+  * No asterisks (*)
+  * No dashes (-)
+  * No colons (:)
+  * No semicolons (;)
+  * No parentheses ()
+  * No quotation marks ("")
+  * No brackets []
+  * No braces {}
+
+Response format (JSON):
+{
+  "scripts": [
+    {
+      "content": "First script content here",
+      "translatedContent": "First script translated to {language}"
+    },
+    {
+      "content": "Second script content here",
+      "translatedContent": "Second script translated to {language}"
     }
   ]
 }
@@ -642,10 +729,10 @@ export async function POST(req: Request) {
     if (language === "English") {
       PROMPT = SCRIPT_PROMPT_INTRODUCTION_PERSON_EN.replace("{person name}", topicDetail);
     } else {
-      // PROMPT = SCRIPT_PROMPT_INTRODUCTION_PERSON_KO.replace("{person name}", topicDetail).replace(
-      //   "{language}",
-      //   language
-      // );
+      PROMPT = SCRIPT_PROMPT_INTRODUCTION_PERSON_KO.replace("{person name}", topicDetail).replace(
+        "{language}",
+        language
+      );
     }
   } else if (topic === "Introduction Animal Facts") {
     if (language === "English") {
@@ -680,5 +767,13 @@ export async function POST(req: Request) {
 
   const response = result?.response?.text();
 
-  return NextResponse.json(JSON.parse(response));
+  console.log("response", response);
+
+  try {
+    const parsed = safeParseJson(response as unknown as string);
+    return NextResponse.json(parsed);
+  } catch (err) {
+    console.error("Failed to parse JSON response from model", err);
+    return NextResponse.json({ error: "Invalid JSON from model", raw: response }, { status: 500 });
+  }
 }

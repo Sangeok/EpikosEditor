@@ -17,6 +17,10 @@ export const SequenceItem: Record<SequenceItemType, (item: TrackElement, options
       const fromFrame = Math.floor(textElement.startTime * options.fps);
       const durationInFrames = Math.floor((textElement.endTime - textElement.startTime) * options.fps);
 
+      if (durationInFrames === 0) {
+        return null as unknown as JSX.Element;
+      }
+
       return (
         <Sequence
           key={`${textElement.laneId ?? "Text-0"}:${textElement.id}`}
@@ -36,6 +40,10 @@ export const SequenceItem: Record<SequenceItemType, (item: TrackElement, options
       const imageElement = item as MediaElement;
       const fromFrame = Math.floor(imageElement.startTime * options.fps);
       const durationInFrames = Math.floor((imageElement.endTime - imageElement.startTime) * options.fps);
+
+      if (durationInFrames === 0) {
+        return null as unknown as JSX.Element;
+      }
 
       return (
         <Sequence
@@ -58,6 +66,10 @@ export const SequenceItem: Record<SequenceItemType, (item: TrackElement, options
       const videoElement = item as MediaElement;
       const fromFrame = Math.floor(videoElement.startTime * options.fps);
       const durationInFrames = Math.floor((videoElement.endTime - videoElement.startTime) * options.fps);
+
+      if (durationInFrames === 0) {
+        return null as unknown as JSX.Element;
+      }
 
       return (
         <Sequence
@@ -91,6 +103,10 @@ export const SequenceItem: Record<SequenceItemType, (item: TrackElement, options
       const audioElement = item as AudioElement;
       const fromFrame = Math.floor(audioElement.startTime * options.fps);
       const durationInFrames = Math.floor((audioElement.endTime - audioElement.startTime) * options.fps);
+
+      if (durationInFrames === 0) {
+        return null as unknown as JSX.Element;
+      }
 
       const offsetSeconds = audioElement.sourceStart ?? 0;
 

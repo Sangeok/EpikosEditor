@@ -3,8 +3,6 @@ import { useRef } from "react";
 export default function TTSPlayer({ ttsUrl }: { ttsUrl: string }) {
   const audioRef = useRef(null);
 
-  console.log("ttsUrl", ttsUrl);
-
   return (
     <>
       {ttsUrl && (

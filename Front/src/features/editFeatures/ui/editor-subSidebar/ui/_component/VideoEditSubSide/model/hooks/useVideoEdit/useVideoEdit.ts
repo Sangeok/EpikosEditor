@@ -1,19 +1,19 @@
-import { useFileUpload } from "./useFileUpload";
-import { useDragAndDrop } from "../../../../../model/hooks";
-import { useVideoProjectManagement } from "./useVideoProjectManagement";
+import { useDragAndDrop } from "../../../../../../model/hooks";
+import { useFileUpload } from "./_internal/useFileUpload";
+import { useAddVideoToTimeline } from "./_internal/useAddVideoToTimeline";
 
 export function useVideoEdit() {
   const fileUpload = useFileUpload();
   const dragAndDrop = useDragAndDrop();
-  const projectManagement = useVideoProjectManagement();
+  const videoTimeline = useAddVideoToTimeline();
 
   const handleFileSelect = (files: FileList | null) => {
-    fileUpload.handleFileSelect(files, projectManagement.addVideoToTimeLine);
+    fileUpload.handleFileSelect(files, videoTimeline.addVideoToTimeline);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     dragAndDrop.handleDrop(e, (files) => {
-      fileUpload.handleFileSelect(files, projectManagement.addVideoToTimeLine);
+      fileUpload.handleFileSelect(files, videoTimeline.addVideoToTimeline);
     });
   };
 
@@ -28,7 +28,7 @@ export function useVideoEdit() {
       handleDrag: dragAndDrop.handleDrag,
       handleDrop,
       removeVideo: fileUpload.removeVideo,
-      addVideoToTimeLine: projectManagement.addVideoToTimeLine,
+      addVideoToTimeline: videoTimeline.addVideoToTimeline,
     },
   };
 }

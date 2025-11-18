@@ -1,6 +1,6 @@
 import axios from "axios";
 import { parseSRT, segmentSRTBySentence } from "../lib/sceneSegmentation";
-import { CAPTION_CONFIG, ERROR_MESSAGES } from "./constants";
+import { CAPTION_CONFIG, ERROR_MESSAGES } from "../constants";
 
 /**
  * Blob URL에서 오디오 파일을 가져와 File 객체로 변환
@@ -40,10 +40,7 @@ export async function generateCaptionsAPI(audioFile: File, language: string) {
 /**
  * 자막 번역 API 호출
  */
-export async function translateCaption(
-  text: string,
-  targetLanguage: string
-): Promise<string> {
+export async function translateCaption(text: string, targetLanguage: string): Promise<string> {
   const response = await axios.post("/api/generate-translatedCaption", {
     text,
     targetLanguage,

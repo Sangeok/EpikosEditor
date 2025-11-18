@@ -1,7 +1,6 @@
 import { useMediaStore } from "@/entities/media/useMediaStore";
-import { createVideoElement } from "../../lib/videoElementFactory";
-import { MediaElement } from "@/entities/media/types";
 import { useTrackLaneStore } from "@/features/editFeatures/model/store/useTrackLaneStore";
+import { createVideoElement } from "../../../../lib/videoElementFactory";
 
 interface VideoData {
   url: string;
@@ -10,11 +9,11 @@ interface VideoData {
   height: number;
 }
 
-export function useVideoProjectManagement() {
-  const { media, addMediaElement, updateMediaElement, deleteMediaElement } = useMediaStore();
+export function useAddVideoToTimeline() {
+  const { media, addMediaElement } = useMediaStore();
   const activeLaneByType = useTrackLaneStore((s) => s.activeLaneByType);
 
-  const addVideoToTimeLine = (videoData: VideoData) => {
+  const addVideoToTimeline = (videoData: VideoData) => {
     const laneId = activeLaneByType.Media;
     const videoElement = createVideoElement(videoData, laneId);
 
@@ -27,17 +26,7 @@ export function useVideoProjectManagement() {
     addMediaElement(videoElement);
   };
 
-  const updateVideoSettings = (videoId: string, updates: Partial<MediaElement>) => {
-    updateMediaElement(videoId, updates);
-  };
-
-  const deleteVideo = (videoId: string) => {
-    deleteMediaElement(videoId);
-  };
-
   return {
-    addVideoToTimeLine,
-    updateVideoSettings,
-    deleteVideo,
+    addVideoToTimeline,
   };
 }

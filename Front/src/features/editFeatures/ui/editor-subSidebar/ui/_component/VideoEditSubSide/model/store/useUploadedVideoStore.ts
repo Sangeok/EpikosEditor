@@ -10,14 +10,14 @@ interface UploadedVideoStore {
 
 export const useUploadedVideoStore = create<UploadedVideoStore>((set) => ({
   videos: [],
-  addVideo: (video) => set((s) => ({ videos: [...s.videos, video] })),
+  addVideo: (video) => set((state) => ({ videos: [...state.videos, video] })),
   removeVideo: (index) =>
-    set((s) => {
-      const target = s.videos[index];
+    set((state) => {
+      const target = state.videos[index];
       if (target?.url) {
         URL.revokeObjectURL(target.url);
       }
-      return { videos: s.videos.filter((_, i) => i !== index) };
+      return { videos: state.videos.filter((_, i) => i !== index) };
     }),
   clear: () => set({ videos: [] }),
 }));

@@ -17,8 +17,6 @@ export default function Composition() {
   const showHorizonSmartGuide = useSmartGuideStore((state) => state.showHorizonSmartGuide);
   const showBaseSmartGuide = isDraggingText && !showVerticalSmartGuide && !showHorizonSmartGuide;
 
-  console.log("media.mediaElement!!!!", media.mediaElement);
-
   return (
     <div id="composition-container" className="relative w-full h-full">
       {media.textElement.map((textElement) => {

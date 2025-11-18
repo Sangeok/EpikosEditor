@@ -51,7 +51,7 @@ export function useAudioEdit(): {
     }
 
     const laneId = activeLaneByType.Audio;
-    const audioElement = await createAudioElement(audio.url, laneId);
+    const audioElement = await createAudioElement(audio.url, laneId, "user");
     addAudioElement(audioElement);
   };
 

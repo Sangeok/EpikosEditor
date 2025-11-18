@@ -4,13 +4,6 @@ export function useAudioPreview() {
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
 
-  const stopCurrentPreview = () => {
-    if (previewAudio) {
-      previewAudio.pause();
-      previewAudio.currentTime = 0;
-    }
-  };
-
   const playAudio = (audioUrl: string, index: number) => {
     const audio = new Audio(audioUrl);
     audio.volume = 0.5;
@@ -26,7 +19,11 @@ export function useAudioPreview() {
   };
 
   const togglePreview = (audioUrl: string, index: number) => {
-    stopCurrentPreview();
+    // 현재 재생 중인 오디오 정리
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio.currentTime = 0;
+    }
 
     if (playingIndex === index) {
       setPlayingIndex(null);
