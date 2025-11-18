@@ -1,6 +1,6 @@
 "use client";
 
-import { useVideoEdit } from "../model/hooks/useVideoEdit";
+import { useVideoEdit } from "../model/hooks/useVideoEdit/useVideoEdit";
 import MediaFileUploadArea from "../../MediaFileUploadArea";
 import VideoPreviewArea from "./_component/VideoPreviewArea";
 import { useTrackLaneStore } from "@/features/editFeatures/model/store/useTrackLaneStore";
@@ -40,7 +40,7 @@ export default function VideoEditSubSide() {
       <VideoPreviewArea
         uploadedVideos={state.uploadedVideos}
         removeVideo={actions.removeVideo}
-        addVideoToTimeLine={actions.addVideoToTimeLine}
+        addVideoToTimeline={actions.addVideoToTimeline}
       />
     </div>
   );

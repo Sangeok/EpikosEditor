@@ -82,7 +82,13 @@ export default function MediaFileUploadArea({
       <Icon className="mx-auto h-12 w-12 text-gray-400 mb-3" />
       <p className="text-gray-300 mb-2">{config.text}</p>
       <p className="text-gray-500 text-sm mb-4">{config.description}</p>
-      <Button onClick={() => fileInputRef.current?.click()} variant="light" size="sm" disabled={disabled || loading}>
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        variant="light"
+        size="sm"
+        disabled={disabled || loading}
+        className="w-full"
+      >
         {loading ? "Processing..." : config.button}
       </Button>
     </div>

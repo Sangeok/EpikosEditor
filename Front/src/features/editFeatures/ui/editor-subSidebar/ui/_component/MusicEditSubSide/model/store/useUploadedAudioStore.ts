@@ -10,7 +10,7 @@ interface UploadedAudioStore {
 
 export const useUploadedAudioStore = create<UploadedAudioStore>((set) => ({
   audios: [],
-  addAudio: (audio) => set((s) => ({ audios: [...s.audios, audio] })),
-  removeAudio: (index) => set((s) => ({ audios: s.audios.filter((_, i) => i !== index) })),
+  addAudio: (audio) => set((state) => ({ audios: [...state.audios, audio] })),
+  removeAudio: (index) => set((state) => ({ audios: state.audios.filter((_, i) => i !== index) })),
   clear: () => set({ audios: [] }),
 }));

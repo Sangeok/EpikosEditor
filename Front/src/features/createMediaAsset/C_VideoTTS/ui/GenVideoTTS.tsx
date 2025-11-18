@@ -40,9 +40,6 @@ export default function GenVideoTTS() {
   const ttsScript =
     (language === "English" ? selectedVideoScript?.content : selectedVideoScript?.translatedContent) || "";
 
-  console.log("ttsScript", ttsScript);
-  console.log("selectedVideoScript", selectedVideoScript);
-  console.log("language", language);
   return (
     <div className="mt-5 border-b border-gray-200 pb-5">
       <h2 className="text-xl">Generate TTS</h2>

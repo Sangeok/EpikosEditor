@@ -135,15 +135,7 @@ export default function DraggableText({ element }: DraggableTextProps) {
           suppressContentEditableWarning={true}
         />
       ) : (
-        <span
-          style={{
-            whiteSpace: element.whiteSpace ?? "pre-wrap",
-            overflowWrap: "break-word",
-            wordBreak: "break-word",
-          }}
-        >
-          {element.text}
-        </span>
+        <span>{element.text}</span>
       )}
     </div>
   );

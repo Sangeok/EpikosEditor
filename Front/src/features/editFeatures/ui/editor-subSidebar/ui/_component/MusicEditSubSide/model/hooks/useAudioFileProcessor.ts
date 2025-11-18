@@ -29,7 +29,7 @@ export function useAudioFileProcessor() {
 
       try {
         const laneId = activeLaneByType.Audio;
-        const audioElement = await createAudioElement(audioUrl, laneId);
+        const audioElement = await createAudioElement(audioUrl, laneId, "user");
         addAudioElement(audioElement);
       } catch (error: unknown) {
         console.error("Error uploading audio element:", error);
@@ -43,6 +43,8 @@ export function useAudioFileProcessor() {
           url: audioUrl,
           volume: 100,
           speed: 1,
+          origin: "user",
+          sourceStart: 0,
         };
         addAudioElement(fallbackAudioElement);
       }

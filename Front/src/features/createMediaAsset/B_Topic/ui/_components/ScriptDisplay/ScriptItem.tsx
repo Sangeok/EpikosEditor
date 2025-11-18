@@ -14,6 +14,8 @@ interface ScriptItemProps {
 export function ScriptItem({ script, language, isSelected, isHovered, onSelect, onHover }: ScriptItemProps) {
   const content = language === "English" ? script.content : script.translatedContent;
 
+  console.log("script", script);
+
   return (
     <div className="relative" onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)}>
       <div onClick={onSelect} className={clsx("p-3 border rounded-lg cursor-pointer", isSelected && "bg-zinc-700")}>

@@ -4,13 +4,8 @@ import { CreateVideoField } from "@/entities/mediaAsset/types";
 import useCaptionStore from "@/entities/mediaAsset/useCaptionStore";
 import { useState } from "react";
 import { convertToSRT } from "../../lib/convertToSRT";
-import { ERROR_MESSAGES } from "../constants";
-import {
-  fetchAudioFile,
-  generateCaptionsAPI,
-  translateCaption,
-  processSRT,
-} from "../utils";
+import { ERROR_MESSAGES } from "../../constants";
+import { fetchAudioFile, generateCaptionsAPI, translateCaption, processSRT } from "../utils";
 
 export const useGenCaption = ({
   ttsUrl,

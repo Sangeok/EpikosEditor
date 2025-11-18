@@ -4,6 +4,7 @@ import TextArea from "@/shared/ui/atoms/TextArea/ui/TextArea";
 import { useState } from "react";
 import { useTrackLaneStore } from "@/features/editFeatures/model/store/useTrackLaneStore";
 import LaneSelector from "../../SelectTextTrack";
+import { createTextElement } from "@/shared/lib/textElementFactory";
 
 export default function TextEditSubSide() {
   const [text, setText] = useState<string>("");
@@ -17,25 +18,7 @@ export default function TextEditSubSide() {
 
   const handleAddText = () => {
     const laneId = activeLaneByType.Text ?? textLanes[0] ?? "Text-0";
-    const newText = {
-      id: crypto.randomUUID(),
-      type: "text",
-      startTime: 0,
-      endTime: 5,
-      duration: 5,
-      laneId,
-
-      text: text || "No Text",
-      positionX: 425,
-      positionY: 500,
-      fontSize: 120,
-      textColor: "#ffffff",
-      backgroundColor: "bg-transparent",
-      font: "Arial",
-      width: 300,
-      height: 300,
-      animation: "none",
-    };
+    const newText = createTextElement({ text: text || "No Text" }, laneId);
     addTextElement(newText);
   };
 

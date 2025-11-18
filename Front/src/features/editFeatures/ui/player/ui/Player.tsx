@@ -25,10 +25,7 @@ export default function Player() {
     return <div>No media</div>;
   }
 
-  const durationInFrames = PlayerService.getDurationInFrames(
-    projectDuration,
-    fps
-  );
+  const durationInFrames = PlayerService.getDurationInFrames(projectDuration, fps);
 
   return (
     <RemotionPlayer
