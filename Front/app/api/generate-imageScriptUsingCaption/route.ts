@@ -1,6 +1,48 @@
 import { generateImageScript } from "@/shared/lib/AiModel";
 import { NextResponse } from "next/server";
 
+const LIFE_SCIENCE_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style that reveal the hidden science principles behind everyday moments: {life science}
+
+Global scene list (JSON): {scenesJson}
+
+Instructions:
+1) Produce EXACTLY {scenes.length} imagePrompt items, strictly preserving the scene order.
+2) Use scenes[i].text as the narrative anchor, but expand each description into a vivid everyday setting where the underlying scientific principle from {life science} becomes visible.
+3) For every imagePrompt, include:
+   - Concrete daily environment details (location, time of day, lighting, materials) that the audience can immediately recognize.
+   - Humans, animals, or objects engaged in the action, emphasizing textures, motions, and interactions that expose the scientific mechanism (forces, flows, reactions, energy transfer, biological cycles, etc.).
+   - Visual cues that bridge macro and micro scales (e.g., translucent overlays showing molecular structures, magnetic field lines, airflow ribbons, cross-sections) without turning abstract or diagrammatic.
+   - Colors, mood, and compositional traits reflecting the {style} style while keeping the scene believable and accessible.
+4) Maintain factual accuracy: align every visual element with the real scientific behavior described; avoid exaggerated fantasy or inaccurate physics/biology.
+5) Ensure continuity: keep recurring subjects, props, and ambient tone consistent across scenes when applicable so the audience senses one coherent mini documentary.
+6) Keep each imagePrompt between 30 and 90 words.
+7) Do NOT include camera angles, lens jargon, or any subscription/meta messaging.
+
+Scene metadata copy rules (do NOT use scenes' text to craft the imagePrompt):
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Important notes:
+- Do NOT include camera angle, lens, shot types, or other technical filming directions.
+- Do NOT include any content related to subscription requests.
+- Focus purely on descriptive visual content suitable for image generation.
+- If visual references vary across subspecies or seasonal coats, pick one consistent, plausible variant and maintain it across all prompts.
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>"
+  }
+]
+`;
+
 const INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT = `
 Generate detailed image prompts in {style} style for introducing a real animal or species: {animal facts}
 
@@ -387,6 +429,11 @@ export async function POST(req: Request) {
   } else if (topic === "Psychology Experiment") {
     PROMPT = PSYCHOLOGY_EXPERIMENT_SCRIPT_PROMPT.replaceAll("{style}", String(style))
       .replaceAll("{psychology experiment}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Life Science") {
+    PROMPT = LIFE_SCIENCE_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{life science}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
   }
