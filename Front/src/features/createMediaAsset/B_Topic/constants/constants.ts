@@ -7,6 +7,7 @@ export const DetailsPlaceHolder = {
   IntroductionAnimalFacts: "Enter the introduction animal facts...",
   ArtInterpretation: "Enter the art interpretation...",
   PsychologyExperiment: "Enter the psychology experiment...",
+  LifeScience: "Enter the life science...",
 } as const;
 
 export const MainTopic = [
@@ -18,4 +19,5 @@ export const MainTopic = [
   "Introduction Animal Facts",
   "Art Interpretation",
   "Psychology Experiment",
+  "Life Science",
 ] as const;
