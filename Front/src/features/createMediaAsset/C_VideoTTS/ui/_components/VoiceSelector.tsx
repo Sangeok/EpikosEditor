@@ -21,7 +21,7 @@ interface VoiceSelectorProps {
 export default function VoiceSelector({ voice, setVoice }: VoiceSelectorProps) {
   return (
     <div className="mt-5">
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center mb-2">
         <h2>Select the Voice</h2>
         <Tooltip
           position="right"
