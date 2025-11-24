@@ -1,8 +1,8 @@
 import { VideoStyleOptionsType } from "@/entities/mediaAsset/types";
 import { inngest } from "./client";
-import axios from "axios";
 import { convertToSRT } from "@/features/createMediaAsset/D_Caption/lib/convertToSRT";
 import { processSRT, translateCaption } from "@/features/createMediaAsset/D_Caption/model/utils";
+import type { AutoGeneratePayload } from "@/server/autoGenerateStore";
 
 type AutoGenerateEvent = {
   data: {
@@ -14,6 +14,8 @@ type AutoGenerateEvent = {
     videoStyle: VideoStyleOptionsType | string;
     voice: string;
     scriptIndex?: number;
+    jobId?: string;
+    requestedAt?: number;
   };
 };
 
@@ -32,12 +34,42 @@ function safeParseJson<T>(text: string, fallback: T): T {
   }
 }
 
+const AUTO_GENERATE_RESULT_ENDPOINT =
+  process.env.AUTO_GENERATE_RESULT_ENDPOINT ?? "http://localhost:3000/api/auto-generate/result";
+
+async function reportAutoGenerateResult(
+  jobId: string | undefined,
+  payload: AutoGeneratePayload | null,
+  error?: unknown
+) {
+  if (!jobId) return;
+
+  const body = payload
+    ? { jobId, payload }
+    : {
+        jobId,
+        error: error instanceof Error ? error.message : String(error),
+      };
+
+  try {
+    await fetch(AUTO_GENERATE_RESULT_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (storeError) {
+    console.error("Failed to report auto-generate result", storeError);
+  }
+}
+
 export const generateMediaAsset = inngest.createFunction(
   { id: "generate-media-asset" },
   { event: "generate-media-asset-events", retries: 1 },
   async ({ event, step }) => {
     const payload = event as AutoGenerateEvent;
-    const { language, videoStyle, voice, topic, topicDetail } = payload.data;
+    const { language, videoStyle, voice, topic, topicDetail, jobId } = payload.data;
     console.log("payload", payload);
 
     try {
@@ -50,13 +82,13 @@ export const generateMediaAsset = inngest.createFunction(
           },
         });
         const data = await result.json();
-        return data.scripts[0].content;
+        return data.scripts;
       });
 
       const videoTTs = await step.run("generate-video-tts", async () => {
         const result = await fetch("http://localhost:3000/api/generate-voice", {
           method: "POST",
-          body: JSON.stringify({ text: videoScript, voice }),
+          body: JSON.stringify({ text: videoScript[0].content, voice }),
           headers: {
             "Content-Type": "application/json",
           },
@@ -120,7 +152,7 @@ export const generateMediaAsset = inngest.createFunction(
 
       if (hasImageScript) {
         for (let i = 0; i < imageScript.length; i++) {
-          const imageUrl = await step.run("generate-image", async () => {
+          const imageUrl = await step.run(`generate-image-${i}`, async () => {
             const result = await fetch("http://localhost:3000/api/generate-image", {
               method: "POST",
               body: JSON.stringify({ imagePrompt: imageScript[i].imagePrompt }),
@@ -133,7 +165,6 @@ export const generateMediaAsset = inngest.createFunction(
           });
           imageUrls.push(imageUrl);
         }
-        return imageUrls;
       }
 
       const explanation = await step.run("generate-explanation", async () => {
@@ -148,18 +179,32 @@ export const generateMediaAsset = inngest.createFunction(
         return data.explanation;
       });
 
-      return {
+      const normalizedVideoTTs: AutoGeneratePayload["videoTTs"] = {
+        buffer: Buffer.isBuffer(videoTTs.buffer)
+          ? videoTTs.buffer
+          : videoTTs.buffer instanceof Uint8Array
+          ? Buffer.from(videoTTs.buffer)
+          : Buffer.from((videoTTs.buffer as { data?: number[] })?.data ?? []),
+        mimeType: videoTTs.mimeType,
+      };
+
+      const resultPayload: AutoGeneratePayload = {
         message: "generate-media-asset-events",
         data: payload.data,
         videoScript,
-        // captions,
-        // generatedSRT,
+        videoTTs: normalizedVideoTTs,
+        captions: generatedSRT,
         imageScript,
         imageUrls,
         explanation,
       };
+
+      await reportAutoGenerateResult(jobId, resultPayload);
+
+      return resultPayload;
     } catch (error) {
       console.error(error);
+      await reportAutoGenerateResult(payload.data.jobId, null, error);
     } finally {
       // console.log("videoScript", videoScript);
     }

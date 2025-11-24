@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validate } from "uuid";
 import { inngest } from "../../../inngest/client";
 import { randomUUID } from "crypto";
 
