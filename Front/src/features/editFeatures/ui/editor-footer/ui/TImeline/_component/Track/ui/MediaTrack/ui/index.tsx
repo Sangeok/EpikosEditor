@@ -26,6 +26,8 @@ export default function MediaTrack({ laneId }: { laneId: string }) {
   });
   const hasMediaElements = elementsInLane.length > 0;
 
+  console.log("elementsInLane", elementsInLane);
+
   return (
     <div className="relative w-full h-full bg-zinc-900">
       {hasMediaElements && (

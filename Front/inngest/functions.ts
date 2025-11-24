@@ -19,21 +19,6 @@ type AutoGenerateEvent = {
   };
 };
 
-function extractJsonString(text = ""): string {
-  const trimmed = text.trim();
-  const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (codeBlockMatch) return codeBlockMatch[1].trim();
-  return trimmed;
-}
-
-function safeParseJson<T>(text: string, fallback: T): T {
-  try {
-    return JSON.parse(extractJsonString(text));
-  } catch {
-    return fallback;
-  }
-}
-
 const AUTO_GENERATE_RESULT_ENDPOINT =
   process.env.AUTO_GENERATE_RESULT_ENDPOINT ?? "http://localhost:3000/api/auto-generate/result";
 
@@ -205,11 +190,6 @@ export const generateMediaAsset = inngest.createFunction(
     } catch (error) {
       console.error(error);
       await reportAutoGenerateResult(payload.data.jobId, null, error);
-    } finally {
-      // console.log("videoScript", videoScript);
     }
-
-    // return { message: "generate-media-asset-events", data: payload.data };
-    // return { message: "generate-media-asset-events" };
   }
 );

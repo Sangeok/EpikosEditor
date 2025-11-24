@@ -1,5 +1,5 @@
 import { roundTime } from "@/shared/lib/timeConversion";
-import { createOverlapDetector } from "./overlapDetection";
+import { createOverlapDetector, OVERLAP_EPS } from "./overlapDetection";
 import { TrackElement } from "@/entities/media/types";
 
 // Creates element positioner for timeline drag-and-drop positioning
@@ -21,7 +21,8 @@ export function createElementPositioner<T extends TrackElement>(elements: T[]) {
       const elementStart = roundTime(element.startTime);
       const elementEnd = roundTime(element.endTime);
 
-      const wouldOverlapWithElement = validStartTime < elementEnd && validStartTime + roundedDuration > elementStart;
+      const wouldOverlapWithElement =
+        validStartTime < elementEnd - OVERLAP_EPS && validStartTime + roundedDuration > elementStart + OVERLAP_EPS;
 
       if (wouldOverlapWithElement) {
         validStartTime = roundTime(elementEnd);

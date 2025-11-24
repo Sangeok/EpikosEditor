@@ -23,8 +23,12 @@ function getElementTimeRange(element: TrackElement): TimeRange {
 }
 
 // Judge if the time ranges overlap
+export const OVERLAP_EPS = 0.0005; // 0.5ms 허용치
+
 function doTimeRangesOverlap(range1: TimeRange, range2: TimeRange): boolean {
-  return range1.start < range2.end && range1.end > range2.start;
+  const startsBeforeOtherEnds = range1.start < range2.end - OVERLAP_EPS;
+  const endsAfterOtherStarts = range1.end > range2.start + OVERLAP_EPS;
+  return startsBeforeOtherEnds && endsAfterOtherStarts;
 }
 
 // Calculate the center time position of the timeline element
@@ -40,15 +44,11 @@ function findElementClosestToCenter<T extends TrackElement>(
   if (elements.length === 0) return null;
 
   let closest = elements[0];
-  let minDistance = Math.abs(
-    targetCenter - calculateElementCenterTime(closest)
-  );
+  let minDistance = Math.abs(targetCenter - calculateElementCenterTime(closest));
 
   for (let i = 1; i < elements.length; i++) {
     const element = elements[i];
-    const distance = Math.abs(
-      targetCenter - calculateElementCenterTime(element)
-    );
+    const distance = Math.abs(targetCenter - calculateElementCenterTime(element));
     if (distance < minDistance) {
       closest = element;
       minDistance = distance;
@@ -62,17 +62,11 @@ function findElementClosestToCenter<T extends TrackElement>(
 export function createOverlapDetector<T extends TrackElement>(elements: T[]) {
   // Return the list of elements sorted by start time
   function getFilteredAndSortedElements(excludeId?: string): T[] {
-    return [...elements]
-      .filter((el) => el.id !== excludeId)
-      .sort((a, b) => a.startTime - b.startTime);
+    return [...elements].filter((el) => el.id !== excludeId).sort((a, b) => a.startTime - b.startTime);
   }
 
   // Find all elements that overlap with the target time range
-  function findOverlappingElements(
-    targetStartTime: number,
-    duration: number,
-    excludeId: string
-  ): T[] {
+  function findOverlappingElements(targetStartTime: number, duration: number, excludeId: string): T[] {
     const sortedElements = getFilteredAndSortedElements(excludeId);
     const targetRange = createTimeRange(targetStartTime, duration);
 
@@ -83,27 +77,15 @@ export function createOverlapDetector<T extends TrackElement>(elements: T[]) {
   }
 
   // Return the closest primary overlap element
-  function findClosestOverlappingElement(
-    targetStartTime: number,
-    duration: number,
-    excludeId: string
-  ): T | null {
-    const overlappingElements = findOverlappingElements(
-      targetStartTime,
-      duration,
-      excludeId
-    );
+  function findClosestOverlappingElement(targetStartTime: number, duration: number, excludeId: string): T | null {
+    const overlappingElements = findOverlappingElements(targetStartTime, duration, excludeId);
 
     const targetCenter = roundTime(targetStartTime + duration / 2);
     return findElementClosestToCenter(overlappingElements, targetCenter);
   }
 
   // Check if there is an overlap at the candidate position
-  function hasOverlapAt(
-    candidateStart: number,
-    duration: number,
-    excludeId: string
-  ): boolean {
+  function hasOverlapAt(candidateStart: number, duration: number, excludeId: string): boolean {
     const candidateRange = createTimeRange(candidateStart, duration);
     const sortedElements = getFilteredAndSortedElements(excludeId);
 

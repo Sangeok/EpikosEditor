@@ -37,7 +37,7 @@ export function DropIndicator({ dropPreview, moveDragState }: DropIndicatorProps
   const duration = moveDragState.originalEndTime - moveDragState.originalStartTime;
   const width = calculateElementWidth(0, duration, pixelsPerSecond);
   // Raw cursor-based position (what user sees under cursor)
-  const rawLeftPosition = dropPreview.targetTime * pixelsPerSecond;
+  const rawLeftPosition = Math.round(dropPreview.targetTime * pixelsPerSecond * 10000) / 10000;
   // Resolved non-overlapping position (what will actually be applied on drop)
   const resolvedLeftPosition = typeof moveDragState.ghostPosition === "number" ? moveDragState.ghostPosition : null;
   const showResolved = resolvedLeftPosition !== null && Math.abs(resolvedLeftPosition - rawLeftPosition) > 0.5;
