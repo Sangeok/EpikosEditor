@@ -79,7 +79,11 @@ The revised prompt maintains all the effective elements from the previous versio
 export async function POST(request: NextRequest) {
   const { topic, topicDetail, language } = await request.json();
 
+  console.log("====설명 작성 시작=====");
+  console.log("topic", topic);
+  console.log("topicDetail", topicDetail);
   console.log("language", language);
+  console.log("====설명 작성 완료=====");
 
   const PROMPT = SCRIPT_PROMPT.replace("{topic}", topic)
     .replace("{topicDetail}", topicDetail)

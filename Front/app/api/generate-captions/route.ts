@@ -11,29 +11,23 @@ export async function POST(request: NextRequest) {
     const languageCode = language === "English" ? "en" : "ko";
 
     if (!audioFile) {
-      return NextResponse.json(
-        { error: "오디오 파일이 없습니다" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "오디오 파일이 없습니다" }, { status: 400 });
     }
 
     // Deepgram 클라이언트 생성
-    const deepgramClient = createClient(
-      process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY || ""
-    );
+    const deepgramClient = createClient(process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY || "");
 
     // 파일을 ArrayBuffer로 변환
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     // Deepgram으로 오디오 파일 직접 전송
-    const { result, error } =
-      await deepgramClient.listen.prerecorded.transcribeFile(buffer, {
-        model: "2-general",
-        language: languageCode,
-        tier: "nova",
-        smart_format: true,
-      });
+    const { result, error } = await deepgramClient.listen.prerecorded.transcribeFile(buffer, {
+      model: "nova-3",
+      language: languageCode,
+      // tier: "nova",
+      smart_format: true,
+    });
 
     if (error) throw error;
 
@@ -41,9 +35,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.log(err);
-    return NextResponse.json(
-      { error: "Error processing transcription" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error processing transcription" }, { status: 500 });
   }
 }

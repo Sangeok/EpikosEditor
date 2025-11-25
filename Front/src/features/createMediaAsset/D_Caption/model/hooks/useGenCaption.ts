@@ -36,6 +36,8 @@ export const useGenCaption = ({
 
       // 2. 자막 생성
       const result = await generateCaptionsAPI(audioFile, language);
+      console.log("deepgram result");
+      console.log("result", result);
       const generatedSRT = convertToSRT(result, language);
 
       // 3. 즉시 상태 업데이트 (빠른 UI 피드백)

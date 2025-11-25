@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wand2, Film } from "lucide-react";
+import { Wand2, Film, Smartphone, MonitorPlay } from "lucide-react";
 import { useProjectStore } from "@/entities/project/useProjectStore";
+import VideoFormSelectDialog from "./_component/VideoFormSelectDialog";
 
 interface WorkflowCard {
   id: string;
@@ -35,10 +37,11 @@ const workflowCards: WorkflowCard[] = [
 export default function WorkflowSelectorPage() {
   const router = useRouter();
   const projectId = useProjectStore((state) => state.project.id);
+  const [isSelectionOpen, setIsSelectionOpen] = useState(false);
 
   const handleCardClick = (route: string) => {
     if (route === "create-media-asset") {
-      router.push(`/create-media-asset/${projectId}`);
+      setIsSelectionOpen(true);
     } else if (route === "edits") {
       router.push(`/edits/${projectId}`);
     }
@@ -142,6 +145,8 @@ export default function WorkflowSelectorPage() {
         {/* Footer Note */}
         <div className="text-center mt-16 text-zinc-500 text-sm">You can always switch between workflows later</div>
       </div>
+
+      <VideoFormSelectDialog open={isSelectionOpen} onClose={() => setIsSelectionOpen(false)} projectId={projectId} />
     </div>
   );
 }

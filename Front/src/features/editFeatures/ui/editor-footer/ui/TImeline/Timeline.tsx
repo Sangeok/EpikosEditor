@@ -26,7 +26,7 @@ export default function Timeline() {
   // total timeline pixel length (content width)
   const contentWidth = useMemo(() => {
     const duration = media.projectDuration || 0;
-    const padSeconds = duration > 55 ? 10 : 0; // 55s 초과 시 최소 +10s 확장
+    const padSeconds = duration > 50 ? 5 : 0; // 55s 초과 시 최소 +10s 확장
     const totalPx = (duration + padSeconds) * pixelsPerSecond;
     return Math.max(totalPx, timelineWidth);
   }, [media.projectDuration, pixelsPerSecond, timelineWidth]);
