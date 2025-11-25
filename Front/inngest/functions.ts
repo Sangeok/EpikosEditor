@@ -59,7 +59,7 @@ export const generateMediaAsset = inngest.createFunction(
 
     try {
       const videoScript = await step.run("generate-video-script", async () => {
-        const result = await fetch("http://localhost:3000/api/generate-youtubeScript", {
+        const result = await fetch("http://localhost:3000/api/generate-youtubeScript/shortForm", {
           method: "POST",
           body: JSON.stringify({ topic, language, topicDetail }),
           headers: {

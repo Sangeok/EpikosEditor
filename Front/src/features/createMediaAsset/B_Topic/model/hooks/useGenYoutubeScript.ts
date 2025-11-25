@@ -16,7 +16,7 @@ export const useGenYoutubeScript = () => {
   const GenerateScript = async () => {
     setLoading(true);
     try {
-      const result = await axios.post("/api/generate-youtubeScript", {
+      const result = await axios.post("/api/generate-youtubeScript/shortForm", {
         topic,
         language,
         topicDetail,
