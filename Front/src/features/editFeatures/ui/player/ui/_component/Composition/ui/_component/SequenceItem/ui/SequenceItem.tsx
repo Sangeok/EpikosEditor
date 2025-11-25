@@ -3,6 +3,7 @@ import { AbsoluteFill, Sequence, Audio, OffthreadVideo } from "remotion";
 import DraggableText from "./_component/DraggableText/ui/DraggableText";
 import { AudioElement, MediaElement, TextElement, TrackElement } from "@/entities/media/types";
 import { ImageWithFade } from "./_component/ImageWithFade/ui/ImageWithFade";
+import { ImageWithZoom } from "./_component/ImageWithZoom/ui/ImageWithZoom";
 
 interface SequenceItemOptions {
   fps: number;
@@ -40,6 +41,9 @@ export const SequenceItem: Record<SequenceItemType, (item: TrackElement, options
       const imageElement = item as MediaElement;
       const fromFrame = Math.floor(imageElement.startTime * options.fps);
       const durationInFrames = Math.floor((imageElement.endTime - imageElement.startTime) * options.fps);
+
+      // const fadeEffect = imageElement.fadeIn || imageElement.fadeOut;
+      // const zoomEffect = imageElement.zoom;
 
       if (durationInFrames === 0) {
         return null as unknown as JSX.Element;

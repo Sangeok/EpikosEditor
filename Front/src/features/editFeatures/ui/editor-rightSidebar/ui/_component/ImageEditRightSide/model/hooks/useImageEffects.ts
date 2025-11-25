@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { EffectType } from "@/entities/media/types";
 import { useMediaStore } from "@/entities/media/useMediaStore";
-import { DEFAULT_EFFECT_DURATION } from "../../constants";
+import { DEFAULT_FADE_DURATION, DEFAULT_ZOOM_DURATION } from "../../constants";
 import { useSelectedTrackStore } from "@/features/editFeatures/model/store/useSelectedTrackStore";
 
 export function useImageEffects() {
@@ -15,7 +15,7 @@ export function useImageEffects() {
       if (inEffect === "fadeIn") {
         updateAllMediaElement(selectedTrackId as string, "image", {
           fadeIn: true,
-          fadeInDuration: DEFAULT_EFFECT_DURATION,
+          fadeInDuration: DEFAULT_FADE_DURATION,
         });
       }
     },
@@ -27,7 +27,7 @@ export function useImageEffects() {
       if (outEffect === "fadeOut") {
         updateAllMediaElement(selectedTrackId as string, "image", {
           fadeOut: true,
-          fadeOutDuration: DEFAULT_EFFECT_DURATION,
+          fadeOutDuration: DEFAULT_FADE_DURATION,
         });
       }
     },
@@ -41,9 +41,38 @@ export function useImageEffects() {
     [updateAllMediaElement, selectedTrackId]
   );
 
+  // Zoom effect handlers
+  const handleZoomEffectChange = useCallback(
+    (zoomEffect: EffectType) => {
+      if (zoomEffect === "Zoom In" || zoomEffect === "Zoom Out") {
+        updateAllMediaElement(selectedTrackId as string, "image", {
+          zoom: true,
+          zoomDirection: zoomEffect,
+          zoomDuration: DEFAULT_ZOOM_DURATION,
+        });
+      } else if (zoomEffect === "none") {
+        updateAllMediaElement(selectedTrackId as string, "image", {
+          zoom: false,
+          zoomDirection: undefined,
+          zoomDuration: undefined,
+        });
+      }
+    },
+    [updateAllMediaElement, selectedTrackId]
+  );
+
+  const handleZoomDurationChange = useCallback(
+    (value: number) => {
+      updateAllMediaElement(selectedTrackId as string, "image", { zoomDuration: value });
+    },
+    [updateAllMediaElement, selectedTrackId]
+  );
+
   return {
     handleInEffectChange,
     handleOutEffectChange,
     handleFadeDurationChange,
+    handleZoomEffectChange,
+    handleZoomDurationChange,
   };
 }

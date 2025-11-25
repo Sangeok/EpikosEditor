@@ -45,6 +45,11 @@ export interface MediaElement {
   fadeInDuration?: number;
   fadeOutDuration?: number;
 
+  // zoom effects (anchor point is always center)
+  zoom?: boolean;
+  zoomDirection?: "Zoom In" | "Zoom Out";
+  zoomDuration?: number;
+
   // video only
   volume?: number;
   speed?: number;
@@ -71,7 +76,9 @@ export type TrackElement = MediaElement | AudioElement | TextElement;
 
 export type FadeEffectType = "fadeIn" | "fadeOut" | "none";
 
-export type EffectType = FadeEffectType | "none";
+export type ZoomEffectType = "Zoom In" | "Zoom Out" | "none";
+
+export type EffectType = FadeEffectType | ZoomEffectType | "none";
 
 export interface Media {
   projectDuration: number;

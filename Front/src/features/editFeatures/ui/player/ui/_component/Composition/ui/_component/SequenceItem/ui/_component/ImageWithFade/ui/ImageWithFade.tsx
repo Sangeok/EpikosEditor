@@ -6,6 +6,7 @@ import { useCallback, useRef } from "react";
 import { useSmartGuideStore } from "@/features/editFeatures/ui/player/model/hooks/useSmartGuideStore";
 import { useSmartGuideSync } from "../model/hooks/useSmartGuideSync";
 import { CalculateFadeOpacity } from "../lib/calculateFadeOpacity";
+import { ImageWithZoom } from "../../ImageWithZoom/ui/ImageWithZoom";
 
 interface ImageWithFadeProps {
   imageElement: MediaElement;
@@ -19,6 +20,10 @@ export const ImageWithFade = ({ imageElement, durationInFrames, fps }: ImageWith
 
   const isDraggingText = useSmartGuideStore((state) => state.isDraggingText);
   const draggingTextRect = useSmartGuideStore((state) => state.draggingTextRect);
+
+  const zoomEffect = imageElement.zoom;
+
+  const hasNoEffect = !zoomEffect;
 
   // Custom hooks for separated concerns
   const opacity = CalculateFadeOpacity(imageElement, durationInFrames, fps, frame);
@@ -42,19 +47,22 @@ export const ImageWithFade = ({ imageElement, durationInFrames, fps }: ImageWith
         opacity,
       }}
     >
-      <Img
-        style={{
-          pointerEvents: "none",
-          zIndex: 100,
-          maxWidth: "100%",
-          maxHeight: "100%",
-          objectFit: "contain",
-          width: "1080px",
-          height: "1920px",
-        }}
-        src={imageElement.url || ""}
-        alt={"image"}
-      />
+      {hasNoEffect && (
+        <Img
+          style={{
+            pointerEvents: "none",
+            zIndex: 100,
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+            width: "1080px",
+            height: "1920px",
+          }}
+          src={imageElement.url || ""}
+          alt={"image"}
+        />
+      )}
+      {zoomEffect && <ImageWithZoom imageElement={imageElement} durationInFrames={durationInFrames} fps={fps} />}
     </AbsoluteFill>
   );
 };
