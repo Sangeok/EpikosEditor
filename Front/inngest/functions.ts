@@ -16,6 +16,7 @@ type AutoGenerateEvent = {
     scriptIndex?: number;
     jobId?: string;
     requestedAt?: number;
+    videoFormType: "longForm" | "shortForm";
   };
 };
 
@@ -54,14 +55,14 @@ export const generateMediaAsset = inngest.createFunction(
   { event: "generate-media-asset-events", retries: 1 },
   async ({ event, step }) => {
     const payload = event as AutoGenerateEvent;
-    const { language, videoStyle, voice, topic, topicDetail, jobId } = payload.data;
+    const { language, videoStyle, voice, topic, topicDetail, jobId, videoFormType } = payload.data;
     console.log("payload", payload);
 
     try {
       const videoScript = await step.run("generate-video-script", async () => {
-        const result = await fetch("http://localhost:3000/api/generate-youtubeScript/shortForm", {
+        const result = await fetch("http://localhost:3000/api/generate-youtubeScript", {
           method: "POST",
-          body: JSON.stringify({ topic, language, topicDetail }),
+          body: JSON.stringify({ topic, language, topicDetail, videoFormType }),
           headers: {
             "Content-Type": "application/json",
           },

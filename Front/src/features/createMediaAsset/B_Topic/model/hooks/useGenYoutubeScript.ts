@@ -4,7 +4,7 @@ import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import axios from "axios";
 import { useState } from "react";
 
-export const useGenYoutubeScript = () => {
+export const useGenYoutubeScript = ({ videoFormType }: { videoFormType: string }) => {
   const topic = useMediaAssetStore((state) => state.initialCreateVideoData.topic);
   const topicDetail = useMediaAssetStore((state) => state.initialCreateVideoData.topicDetail);
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
@@ -16,10 +16,11 @@ export const useGenYoutubeScript = () => {
   const GenerateScript = async () => {
     setLoading(true);
     try {
-      const result = await axios.post("/api/generate-youtubeScript/shortForm", {
+      const result = await axios.post("/api/generate-youtubeScript", {
         topic,
         language,
         topicDetail,
+        videoFormType,
       });
       setVideoScript("videoScript", result?.data?.scripts);
     } catch (error) {

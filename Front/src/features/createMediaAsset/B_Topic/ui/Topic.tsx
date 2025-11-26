@@ -6,9 +6,12 @@ import { LanguageSelector } from "./_components/LanguageSelector";
 import { ScriptDisplay } from "./_components/ScriptDisplay";
 import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import { LoadingButton } from "@/shared/ui/molecule/LoadingButton";
+import { usePathname } from "next/navigation";
 
 export default function Topic() {
-  const { loading, GenerateScript } = useGenYoutubeScript();
+  const pathname = usePathname();
+  const videoFormType = pathname.split("/")[1];
+  const { loading, GenerateScript } = useGenYoutubeScript({ videoFormType });
 
   const videoScript = useMediaAssetStore((state) => state.initialCreateVideoData.videoScript);
 

@@ -11,6 +11,7 @@ import { AutoGeneratePayload } from "@/server/autoGenerateStore";
 import Button from "@/shared/ui/atoms/Button/ui/Button";
 import Dialog from "@/shared/ui/atoms/Dialog/ui/Dialog";
 import axios from "axios";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 type AutoGenerateResultResponse = {
@@ -29,6 +30,8 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
   const [autoJobId, setAutoJobId] = useState<string | null>(null);
   const [autoJobStatus, setAutoJobStatus] = useState<"idle" | "pending" | "completed" | "failed">("idle");
   const [autoJobError, setAutoJobError] = useState<string | null>(null);
+  const pathname = usePathname();
+  const videoFormType = pathname.split("/")[1];
 
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -117,6 +120,7 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
         language: data.language,
         videoStyle: data.generateImage.generateImageStyle,
         voice,
+        videoFormType,
       };
 
       const res = await axios.post("/api/auto-generate", payload);

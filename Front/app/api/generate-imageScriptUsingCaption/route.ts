@@ -372,6 +372,44 @@ Example (shortened, illustrative only):
 ]
 `;
 
+const FOUR_IDIOMS_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style inspired by the four idioms: {four idioms}
+Global scene list (JSON): {scenesJson}
+
+Instructions:
+1) Produce EXACTLY {scenes.length} imagePrompt items, one per scene, in the SAME ORDER as the input scenes.
+2) Do NOT use scenes[i].text to craft the imagePrompt. Base every imagePrompt ONLY on the cultural meaning of {four idioms} and heroic imagery of Chinese generals (e.g., Guan Yu, Zhang Fei, Liu Bei, Sun Quan).
+3) For each prompt, select or blend generals whose personality best matches the idiom’s theme. Keep facial features, armor style, weapon, and demeanor consistent if the same general appears multiple times.
+4) Apply {style} to composition, lighting, textures, and environment while preserving historically plausible details.
+5) Each imagePrompt must include:
+   - Historical or mythic battlefield/background suited to the idiom’s mood
+   - The general’s attire, weapon, pose, facial expression, and notable insignia
+   - Symbolic objects or elemental motifs reflecting the idiom’s metaphor
+   - Overall color palette or atmosphere plus distinctive aspects of the {style} style
+6) Keep each imagePrompt between 30-100 words.
+
+Scene metadata copy rules:
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Important notes:
+- Do NOT include camera angle, lens, shot types, or other technical filming directions.
+- Do NOT mention subscription or call-to-action content.
+- Maintain respectful, heroic depictions without modern slang or pop references.
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>"
+  }
+]`;
+
 export async function POST(req: Request) {
   const { style, script, language, topic, topicDetail, scenes } = await req.json();
 
@@ -434,6 +472,11 @@ export async function POST(req: Request) {
   } else if (topic === "Life Science") {
     PROMPT = LIFE_SCIENCE_SCRIPT_PROMPT.replaceAll("{style}", String(style))
       .replaceAll("{life science}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Four Idioms") {
+    PROMPT = FOUR_IDIOMS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{four idioms}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
   }
