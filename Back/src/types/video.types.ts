@@ -38,6 +38,10 @@ export interface MediaElement {
   fadeOutDuration?: number;
   volume?: number;
   speed?: number;
+
+  zoom?: boolean;
+  zoomDirection?: 'Zoom In' | 'Zoom Out';
+  zoomDuration?: number;
 }
 
 export interface AudioElement {

@@ -77,6 +77,72 @@ const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
   );
 };
 
+const calculateFadeOpacity = (
+  mediaElement: MediaElement,
+  frame: number,
+  durationInFrames: number,
+  fps: number,
+) => {
+  let opacity = 1;
+
+  if (mediaElement.fadeIn) {
+    const fadeInFrames = Math.floor((mediaElement.fadeInDuration ?? 0.5) * fps);
+    opacity = interpolate(frame, [0, fadeInFrames], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+  }
+
+  if (mediaElement.fadeOut) {
+    const fadeOutFrames = Math.floor(
+      (mediaElement.fadeOutDuration ?? 0.5) * fps,
+    );
+    const fadeOutStartFrame = durationInFrames - fadeOutFrames;
+    const fadeOutOpacity = interpolate(
+      frame,
+      [fadeOutStartFrame, durationInFrames],
+      [1, 0],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      },
+    );
+    opacity = Math.min(opacity, fadeOutOpacity);
+  }
+
+  return opacity;
+};
+
+const calculateZoomScale = (
+  mediaElement: MediaElement,
+  frame: number,
+  durationInFrames: number,
+  fps: number,
+) => {
+  if (!mediaElement.zoom || !mediaElement.zoomDirection) {
+    return 1;
+  }
+
+  const zoomDuration = mediaElement.zoomDuration ?? 1;
+  const zoomFrames = Math.min(Math.floor(zoomDuration * fps), durationInFrames);
+
+  if (mediaElement.zoomDirection === 'Zoom In') {
+    return interpolate(frame, [0, zoomFrames], [1, 1.2], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+  }
+
+  if (mediaElement.zoomDirection === 'Zoom Out') {
+    return interpolate(frame, [0, zoomFrames], [1.2, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+  }
+
+  return 1;
+};
+
 const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
   mediaElement,
   fps,
@@ -86,36 +152,20 @@ const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
     (mediaElement.endTime - mediaElement.startTime) * fps,
   );
 
-  const ImageWithFade = () => {
+  const ImageWithEffects = () => {
     const frame = useCurrentFrame();
-    let opacity = 1;
-
-    if (mediaElement.fadeIn) {
-      const fadeInFrames = Math.floor(
-        (mediaElement.fadeInDuration || 0.5) * fps,
-      );
-      opacity = interpolate(frame, [0, fadeInFrames], [0, 1], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      });
-    }
-
-    if (mediaElement.fadeOut) {
-      const fadeOutFrames = Math.floor(
-        (mediaElement.fadeOutDuration || 0.5) * fps,
-      );
-      const fadeOutStartFrame = durationInFrames - fadeOutFrames;
-      const fadeOutOpacity = interpolate(
-        frame,
-        [fadeOutStartFrame, durationInFrames],
-        [1, 0],
-        {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        },
-      );
-      opacity = Math.min(opacity, fadeOutOpacity);
-    }
+    const opacity = calculateFadeOpacity(
+      mediaElement,
+      frame,
+      durationInFrames,
+      fps,
+    );
+    const scale = calculateZoomScale(
+      mediaElement,
+      frame,
+      durationInFrames,
+      fps,
+    );
 
     return (
       <AbsoluteFill
@@ -138,9 +188,11 @@ const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
             objectFit: 'contain',
             width: '1080px',
             height: '1920px',
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
           }}
           src={mediaElement.url || ''}
-          alt={'image'}
+          alt="image"
         />
       </AbsoluteFill>
     );
@@ -153,10 +205,91 @@ const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
       durationInFrames={durationInFrames}
       name={`Image: ${mediaElement.id}`}
     >
-      <ImageWithFade />
+      <ImageWithEffects />
     </Sequence>
   );
 };
+
+// const ImageSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
+//   mediaElement,
+//   fps,
+// }) => {
+//   const fromFrame = Math.floor(mediaElement.startTime * fps);
+//   const durationInFrames = Math.floor(
+//     (mediaElement.endTime - mediaElement.startTime) * fps,
+//   );
+
+//   const ImageWithFade = () => {
+//     const frame = useCurrentFrame();
+//     let opacity = 1;
+
+//     if (mediaElement.fadeIn) {
+//       const fadeInFrames = Math.floor(
+//         (mediaElement.fadeInDuration || 0.5) * fps,
+//       );
+//       opacity = interpolate(frame, [0, fadeInFrames], [0, 1], {
+//         extrapolateLeft: 'clamp',
+//         extrapolateRight: 'clamp',
+//       });
+//     }
+
+//     if (mediaElement.fadeOut) {
+//       const fadeOutFrames = Math.floor(
+//         (mediaElement.fadeOutDuration || 0.5) * fps,
+//       );
+//       const fadeOutStartFrame = durationInFrames - fadeOutFrames;
+//       const fadeOutOpacity = interpolate(
+//         frame,
+//         [fadeOutStartFrame, durationInFrames],
+//         [1, 0],
+//         {
+//           extrapolateLeft: 'clamp',
+//           extrapolateRight: 'clamp',
+//         },
+//       );
+//       opacity = Math.min(opacity, fadeOutOpacity);
+//     }
+
+//     return (
+//       <AbsoluteFill
+//         style={{
+//           zIndex: 100,
+//           overflow: 'hidden',
+//           display: 'flex',
+//           justifyContent: 'center',
+//           alignItems: 'center',
+//           height: '100%',
+//           opacity,
+//         }}
+//       >
+//         <Img
+//           style={{
+//             pointerEvents: 'none',
+//             zIndex: 100,
+//             maxWidth: '100%',
+//             maxHeight: '100%',
+//             objectFit: 'contain',
+//             width: '1080px',
+//             height: '1920px',
+//           }}
+//           src={mediaElement.url || ''}
+//           alt={'image'}
+//         />
+//       </AbsoluteFill>
+//     );
+//   };
+
+//   return (
+//     <Sequence
+//       key={mediaElement.id}
+//       from={fromFrame}
+//       durationInFrames={durationInFrames}
+//       name={`Image: ${mediaElement.id}`}
+//     >
+//       <ImageWithFade />
+//     </Sequence>
+//   );
+// };
 
 const VideoSequence: React.FC<{ mediaElement: MediaElement; fps: number }> = ({
   mediaElement,
