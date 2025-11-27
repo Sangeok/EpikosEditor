@@ -11,10 +11,12 @@ export const useGenCaption = ({
   ttsUrl,
   language,
   setCaptions,
+  videoFormType,
 }: {
   ttsUrl: string;
   language: "English" | "Korean";
   setCaptions: (fieldName: CreateVideoField, captions: string) => void;
+  videoFormType: "shortForm" | "longForm";
 }) => {
   const [loading, setLoading] = useState(false);
   const [srtContent, setSrtContent] = useState("");
@@ -52,7 +54,7 @@ export const useGenCaption = ({
       }
 
       // 5. SRT 파싱 및 씬 생성
-      const { scenes } = processSRT(contentToProcess);
+      const { scenes } = processSRT(contentToProcess, { videoFormType });
 
       // 6. 나머지 상태 업데이트
       setScenes(scenes);

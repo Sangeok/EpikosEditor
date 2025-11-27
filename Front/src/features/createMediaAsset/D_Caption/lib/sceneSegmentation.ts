@@ -12,10 +12,13 @@ function fixed3(n: number): number {
 
 export function parseSRT(srt: string): SrtItem[] {
   if (!srt) return [];
-  const blocks = srt
-    .replace(/\r/g, "")
-    .trim()
-    .split(/\n{2,}/);
+  const normalized = srt.replace(/\r/g, "").trim();
+  if (!normalized) return [];
+  const sanitized = normalized.replace(
+    /\n(?=\s*\d+\s*\n\s*\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3})/g,
+    "\n\n"
+  );
+  const blocks = sanitized.split(/\n{2,}/);
   const items: SrtItem[] = [];
 
   for (const block of blocks) {
@@ -230,23 +233,22 @@ export function segmentSRTGreedy(
 }
 
 // 문장 단위 자막으로 변환한 뒤 동일한 그리디 규칙으로 장면을 구성
-export function segmentSRTBySentence(
-  subs: SrtItem[],
-  opts?: { targetCount?: 4 | 5; minDurSec?: number; minLastSec?: number }
-): ImageScene[] {
-  const sentenceSubs = buildSentenceSubs(subs);
+type SentenceSegmentConfig = {
+  targetCount: number;
+  minDurSec: number;
+  minLastSec: number;
+  minScenes: number;
+};
+
+function buildScenesFromSentenceSubs(sentenceSubs: SrtItem[], config: SentenceSegmentConfig): ImageScene[] {
   if (!sentenceSubs.length) return [];
 
-  const minDurSec = opts?.minDurSec ?? 2;
-  const minLastSec = opts?.minLastSec ?? 4;
-  const minScenes = 3; // 최소 3개 보장
-
+  const { minDurSec, minLastSec, minScenes } = config;
   const tFirst = sentenceSubs[0].start;
   const tLast = sentenceSubs[sentenceSubs.length - 1].end;
   const totalDur = tLast - tFirst;
-  const preferred = (opts?.targetCount ?? 5) as 4 | 5;
-  const targetCount = decideTargetCount(totalDur, preferred, 4);
-  const targetDur = totalDur / targetCount;
+  const targetCount = Math.max(1, Math.min(config.targetCount, sentenceSubs.length));
+  const targetDur = targetCount > 0 ? totalDur / targetCount : totalDur;
 
   const scenes: ImageScene[] = [];
   let curStart = tFirst;
@@ -262,7 +264,7 @@ export function segmentSRTBySentence(
     const remDurIfCut = tLast - accEnd;
     const remMinNeed = remainingSlots * minDurSec;
 
-    if (curDur >= targetDur && canStillFill && remDurIfCut >= remMinNeed) {
+    if (targetCount === 1 || (curDur >= targetDur && canStillFill && remDurIfCut >= remMinNeed)) {
       const startTime = fixed3(curStart);
       const endTime = fixed3(accEnd);
       const text = sentenceSubs
@@ -321,11 +323,82 @@ export function segmentSRTBySentence(
     }
   }
 
-  // 최소 3개 보장 폴백: 문장 단위로 강제 3등분
   if (scenes.length < minScenes && sentenceSubs.length >= minScenes) {
     return forceSplitBySentences(sentenceSubs, minScenes);
   }
 
   const normalized = normalizeScenes(scenes, tFirst, tLast);
   return normalized.map((s, idx) => ({ ...s, id: `scene_${idx + 1}` }));
+}
+
+function calculateShortFormTargetCount(totalDur: number, preferred = 5): number {
+  const fallback = Math.max(3, preferred - 1);
+  if (!Number.isFinite(totalDur) || totalDur <= 0) {
+    return fallback;
+  }
+
+  const minPerScene = 4;
+  const avg = totalDur / preferred;
+  return avg < minPerScene ? fallback : preferred;
+}
+
+function calculateLongFormTargetCount(
+  totalDur: number,
+  sentenceCount: number,
+  { minScenes, maxScenes }: { minScenes: number; maxScenes: number }
+): number {
+  if (!Number.isFinite(totalDur) || totalDur <= 0) {
+    return Math.max(1, Math.min(sentenceCount, minScenes));
+  }
+
+  const approxByDuration = Math.ceil(totalDur / 8); // 목표: 장면당 약 8초
+  const bounded = Math.max(minScenes, Math.min(maxScenes, approxByDuration));
+  if (sentenceCount === 0) return bounded;
+  return Math.max(1, Math.min(sentenceCount, bounded));
+}
+
+export function segmentSRTBySentence(
+  subs: SrtItem[],
+  opts?: { preferredTargetCount?: number; minDurSec?: number; minLastSec?: number; minScenes?: number }
+): ImageScene[] {
+  const sentenceSubs = buildSentenceSubs(subs);
+  if (!sentenceSubs.length) return [];
+
+  const minDurSec = opts?.minDurSec ?? 2;
+  const minLastSec = opts?.minLastSec ?? 4;
+  const minScenes = Math.max(3, opts?.minScenes ?? 3);
+  const preferredTarget = opts?.preferredTargetCount ?? 5;
+  const totalDur = sentenceSubs[sentenceSubs.length - 1].end - sentenceSubs[0].start;
+  const targetCount = calculateShortFormTargetCount(totalDur, preferredTarget);
+
+  return buildScenesFromSentenceSubs(sentenceSubs, {
+    targetCount,
+    minDurSec,
+    minLastSec,
+    minScenes,
+  });
+}
+
+export function segmentSRTBySentenceLongForm(
+  subs: SrtItem[],
+  opts?: { minDurSec?: number; minLastSec?: number; minScenes?: number; maxScenes?: number }
+): ImageScene[] {
+  const sentenceSubs = buildSentenceSubs(subs);
+  if (!sentenceSubs.length) return [];
+
+  const minDurSec = opts?.minDurSec ?? 3;
+  const minLastSec = opts?.minLastSec ?? 6;
+  const minScenes = Math.max(8, opts?.minScenes ?? 8);
+  const maxScenes = Math.max(minScenes, opts?.maxScenes ?? 15);
+  const tFirst = sentenceSubs[0].start;
+  const tLast = sentenceSubs[sentenceSubs.length - 1].end;
+  const totalDur = tLast - tFirst;
+  const targetCount = calculateLongFormTargetCount(totalDur, sentenceSubs.length, { minScenes, maxScenes });
+
+  return buildScenesFromSentenceSubs(sentenceSubs, {
+    targetCount,
+    minDurSec,
+    minLastSec,
+    minScenes,
+  });
 }

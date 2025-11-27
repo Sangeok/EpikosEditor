@@ -6,16 +6,20 @@ import { useGenCaption } from "../model/hooks/useGenCaption";
 import { DownloadIcon } from "lucide-react";
 import Button from "@/shared/ui/atoms/Button/ui/Button";
 import { LoadingButton } from "@/shared/ui/molecule/LoadingButton";
+import { usePathname } from "next/navigation";
 
 export default function VideoCaption() {
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
   const ttsUrl = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrl);
   const setCaptions = useMediaAssetStore((state) => state.setCreateVideoDataByField);
+  const pathname = usePathname();
+  const videoFormType = pathname?.split("/")[1] as "shortForm" | "longForm";
 
   const { loading, srtContent, generateCaptions } = useGenCaption({
     ttsUrl,
     language,
     setCaptions,
+    videoFormType,
   });
 
   return (

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { parseSRT, segmentSRTBySentence } from "../lib/sceneSegmentation";
+import { parseSRT, segmentSRTBySentence, segmentSRTBySentenceLongForm } from "../lib/sceneSegmentation";
 import { CAPTION_CONFIG, ERROR_MESSAGES } from "../constants";
 
 /**
@@ -41,7 +41,7 @@ export async function generateCaptionsAPI(audioFile: File, language: string) {
  * 자막 번역 API 호출
  */
 export async function translateCaption(text: string, targetLanguage: string): Promise<string> {
-  const response = await axios.post("/api/generate-translatedCaption", {
+  const response = await axios.post("http://localhost:3000/api/generate-translatedCaption", {
     text,
     targetLanguage,
   });
@@ -52,12 +52,20 @@ export async function translateCaption(text: string, targetLanguage: string): Pr
 /**
  * SRT 콘텐츠를 파싱하고 씬으로 세그먼트화
  */
-export function processSRT(srtContent: string) {
+export function processSRT(
+  srtContent: string,
+  options?: {
+    videoFormType?: "shortForm" | "longForm";
+  }
+) {
   const subs = parseSRT(srtContent);
-  const scenes = segmentSRTBySentence(subs, {
+  const baseConfig = {
     minDurSec: CAPTION_CONFIG.MIN_DURATION,
     minLastSec: CAPTION_CONFIG.MIN_LAST_DURATION,
-  });
+  };
+
+  const isLongForm = options?.videoFormType === "longForm";
+  const scenes = isLongForm ? segmentSRTBySentenceLongForm(subs, baseConfig) : segmentSRTBySentence(subs, baseConfig);
 
   return { subs, scenes };
 }

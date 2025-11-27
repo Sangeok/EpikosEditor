@@ -72,9 +72,15 @@ export const generateMediaAsset = inngest.createFunction(
       });
 
       const videoTTs = await step.run("generate-video-tts", async () => {
+        let text;
+        if (language === "Korean") {
+          text = videoScript[0].translatedContent;
+        } else {
+          text = videoScript[0].content;
+        }
         const result = await fetch("http://localhost:3000/api/generate-voice", {
           method: "POST",
-          body: JSON.stringify({ text: videoScript[0].content, voice }),
+          body: JSON.stringify({ text, voice }),
           headers: {
             "Content-Type": "application/json",
           },
@@ -119,7 +125,7 @@ export const generateMediaAsset = inngest.createFunction(
         contentToProcess = await translateCaption(generatedSRT, "English");
       }
 
-      const { scenes } = processSRT(contentToProcess);
+      const { scenes } = processSRT(contentToProcess, { videoFormType });
 
       const imageScript = await step.run("generate-image-script", async () => {
         const result = await fetch("http://localhost:3000/api/generate-imageScriptUsingCaption", {

@@ -22,6 +22,7 @@ export const useGenYoutubeScript = ({ videoFormType }: { videoFormType: string }
         topicDetail,
         videoFormType,
       });
+      console.log("script result", result);
       setVideoScript("videoScript", result?.data?.scripts);
     } catch (error) {
       console.log(error);
