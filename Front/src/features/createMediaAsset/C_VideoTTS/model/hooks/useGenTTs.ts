@@ -11,7 +11,7 @@ export const useGenTTs = ({
   language: "English" | "Korean";
   selectedVideoScript: videoScriptType | null;
   voice: string;
-  setTts: (ttsUrl: string) => void;
+  setTts: (ttsUrls: string[]) => void;
   setLoading: (loading: boolean) => void;
 }) => {
   const GenerateTTS = async () => {
@@ -31,7 +31,7 @@ export const useGenTTs = ({
       const audioBlob = response.data;
       const url = URL.createObjectURL(audioBlob);
 
-      setTts(url);
+      setTts([url]);
     } catch (error) {
       console.error("TTS 생성 중 오류:", error);
     } finally {

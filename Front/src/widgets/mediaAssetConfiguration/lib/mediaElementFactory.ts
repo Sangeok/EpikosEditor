@@ -14,12 +14,37 @@ export function createImageElements(imageData: ImageDataType[] | undefined, medi
 }
 
 /**
- * TTS URL로부터 오디오 요소 생성
+ * 다중 TTS URL을 단일 오디오 요소로 변환
  */
-export async function createAudioElementFromTTS(ttsUrl: string | undefined, audioLaneId: string) {
-  if (!ttsUrl) return null;
+export async function createAudioElementFromTTS(ttsUrls: string[] | undefined, audioLaneId: string) {
+  if (!ttsUrls || ttsUrls.length === 0) {
+    return null;
+  }
 
-  return await createAudioElement(ttsUrl, audioLaneId, "create-init");
+  let mergedUrl = ttsUrls[0];
+
+  if (ttsUrls.length > 1) {
+    try {
+      const blobs = await Promise.all(
+        ttsUrls.map(async (url) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch TTS segment: ${response.status}`);
+          }
+          return response.blob();
+        })
+      );
+
+      const mimeType = blobs.find((blob) => blob.type)?.type || "audio/mpeg";
+      const mergedBlob = new Blob(blobs, { type: mimeType });
+      mergedUrl = URL.createObjectURL(mergedBlob);
+    } catch (error) {
+      console.error("Failed to merge TTS URLs", error);
+      return null;
+    }
+  }
+
+  return await createAudioElement(mergedUrl, audioLaneId, "create-init");
 }
 
 /**

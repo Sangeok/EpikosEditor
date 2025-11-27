@@ -27,7 +27,7 @@ export function useVideoGenerator() {
   const activeLaneByType = useTrackLaneStore((s) => s.activeLaneByType);
 
   const imageData = useMediaAssetStore((state) => state.initialCreateVideoData.imageData);
-  const ttsUrl = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrl);
+  const ttsUrls = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrls);
   const captions = useMediaAssetStore((state) => state.initialCreateVideoData.captions);
 
   const addMediaElements = useMediaStore((s) => s.addMediaElements);
@@ -69,7 +69,7 @@ export function useVideoGenerator() {
    */
   const addAudioElements = async () => {
     const audioLaneId = activeLaneByType.Audio;
-    const audioElement = await createAudioElementFromTTS(ttsUrl, audioLaneId);
+    const audioElement = await createAudioElementFromTTS(ttsUrls, audioLaneId);
 
     if (audioElement) {
       console.log("audioElement", audioElement);

@@ -38,7 +38,7 @@ export type CreateVideoType = {
     selectedVideoScript: videoScriptType | null;
   };
   imageScript: ImageScriptType[];
-  ttsUrl: string;
+  ttsUrls: string[];
   captions: string;
   videoExplanation: string;
 };
@@ -52,7 +52,7 @@ export type CreateVideoField =
   | "imageData"
   | "generateImageStyle"
   | "selectedVideoScript"
-  | "ttsUrl"
+  | "ttsUrls"
   | "captions"
   | "language"
   | "cloudinaryTtsUrl"

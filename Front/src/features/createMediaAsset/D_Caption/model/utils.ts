@@ -3,19 +3,29 @@ import { parseSRT, segmentSRTBySentence, segmentSRTBySentenceLongForm } from "..
 import { CAPTION_CONFIG, ERROR_MESSAGES } from "../constants";
 
 /**
- * Blob URL에서 오디오 파일을 가져와 File 객체로 변환
+ * Blob URL 목록에서 오디오 파일을 가져와 단일 File 객체로 변환
  */
-export async function fetchAudioFile(ttsUrl: string): Promise<File> {
-  const response = await fetch(ttsUrl);
-
-  if (!response.ok) {
-    throw new Error(`${ERROR_MESSAGES.FETCH_FAILED}: ${response.status}`);
+export async function fetchAudioFile(ttsUrls: string[]): Promise<File> {
+  if (!ttsUrls?.length) {
+    throw new Error(ERROR_MESSAGES.NO_TTS);
   }
 
-  const blob = await response.blob();
-  const fileType = blob.type || CAPTION_CONFIG.AUDIO_TYPE;
+  const blobs = await Promise.all(
+    ttsUrls.map(async (ttsUrl) => {
+      const response = await fetch(ttsUrl);
 
-  return new File([blob], CAPTION_CONFIG.AUDIO_FILENAME, { type: fileType });
+      if (!response.ok) {
+        throw new Error(`${ERROR_MESSAGES.FETCH_FAILED}: ${response.status}`);
+      }
+
+      return response.blob();
+    })
+  );
+
+  const fileType = blobs.find((blob) => blob.type)?.type || CAPTION_CONFIG.AUDIO_TYPE;
+  const mergedBlob = new Blob(blobs, { type: fileType });
+
+  return new File([mergedBlob], CAPTION_CONFIG.AUDIO_FILENAME, { type: fileType });
 }
 
 /**

@@ -38,16 +38,22 @@ export class ProjectPersistenceService {
         throw new Error("Project ID is required");
       }
 
-      // 세션(새로고침/재시작) 이후에도 유지되도록 'blob:' URL의 TTS 오디오를 Blob으로 확보
-      let ttsBlob: Blob | null = null;
-      const currentTtsUrl = mediaAssetStore.initialCreateVideoData.ttsUrl;
-      if (currentTtsUrl && currentTtsUrl.startsWith("blob:")) {
-        try {
-          ttsBlob = await fetch(currentTtsUrl).then((r) => r.blob());
-        } catch (e) {
-          console.warn("Failed to capture TTS blob", e);
-        }
-      }
+      // 세션(새로고침/재시작) 이후에도 유지되도록 'blob:' URL의 TTS 오디오들을 Blob으로 확보
+      const currentTtsUrls = mediaAssetStore.initialCreateVideoData.ttsUrls || [];
+      const ttsBlobs = await Promise.all(
+        currentTtsUrls.map(async (url) => {
+          if (!url || !url.startsWith("blob:")) {
+            return null;
+          }
+          try {
+            return await fetch(url).then((r) => r.blob());
+          } catch (e) {
+            console.warn("Failed to capture TTS blob", e);
+            return null;
+          }
+        })
+      );
+      const hasTtsBlob = ttsBlobs.some((blob) => blob !== null);
 
       const audioBlobs: Record<string, Blob> = {};
       // 세션 종료 시 사라지는 'blob:' 오디오를 병렬로 fetch해 Blob(id→Blob)으로 수집
@@ -83,7 +89,7 @@ export class ProjectPersistenceService {
           zoom: timelineStore.zoom,
         },
         blobData: {
-          tts: ttsBlob,
+          tts: hasTtsBlob ? ttsBlobs : null,
           audio: audioBlobs,
         },
       };
@@ -136,9 +142,15 @@ export class ProjectPersistenceService {
 
       // Revoke existing blob: URLs in current stores to prevent leaks
       try {
-        const prevTts = mediaAssetStore.initialCreateVideoData.ttsUrl;
-        if (prevTts && prevTts.startsWith("blob:")) {
-          URL.revokeObjectURL(prevTts);
+        const prevTtsUrls = mediaAssetStore.initialCreateVideoData.ttsUrls || [];
+        prevTtsUrls.forEach((url) => {
+          if (url && url.startsWith("blob:")) {
+            URL.revokeObjectURL(url);
+          }
+        });
+        const legacyPrevTts = (mediaAssetStore.initialCreateVideoData as any).ttsUrl;
+        if (legacyPrevTts && typeof legacyPrevTts === "string" && legacyPrevTts.startsWith("blob:")) {
+          URL.revokeObjectURL(legacyPrevTts);
         }
         for (const el of mediaStore.media.audioElement || []) {
           if (el.url && el.url.startsWith("blob:")) {
@@ -161,10 +173,28 @@ export class ProjectPersistenceService {
       };
 
       const loadedCreateVideoData = (savedProject as any).createVideoData;
-      let ttsUrl = loadedCreateVideoData?.ttsUrl ?? "";
-      const ttsBlob = savedProject.blobData?.tts ?? null;
-      if (ttsBlob) {
-        ttsUrl = URL.createObjectURL(ttsBlob);
+      let ttsUrls: string[] = [];
+      if (Array.isArray(loadedCreateVideoData?.ttsUrls)) {
+        ttsUrls = [...loadedCreateVideoData.ttsUrls];
+      } else if (loadedCreateVideoData?.ttsUrl) {
+        ttsUrls = [loadedCreateVideoData.ttsUrl];
+      }
+
+      const savedTtsBlobs = savedProject.blobData?.tts ?? null;
+      if (Array.isArray(savedTtsBlobs)) {
+        ttsUrls = savedTtsBlobs.map((blob, index) => {
+          if (blob) {
+            return URL.createObjectURL(blob);
+          }
+          return ttsUrls[index] ?? "";
+        }).filter((url) => !!url);
+      } else if (savedTtsBlobs instanceof Blob) {
+        const rebuiltUrl = URL.createObjectURL(savedTtsBlobs);
+        if (ttsUrls.length > 0) {
+          ttsUrls[0] = rebuiltUrl;
+        } else {
+          ttsUrls = [rebuiltUrl];
+        }
       }
 
       // Load project data
@@ -175,9 +205,10 @@ export class ProjectPersistenceService {
 
       // Load media-asset(create video) data with rebuilt tts URL
       if (loadedCreateVideoData) {
+        const { ttsUrl: _legacyTtsUrl, ...rest } = loadedCreateVideoData ?? {};
         mediaAssetStore.setCreateVideoData({
-          ...loadedCreateVideoData,
-          ttsUrl,
+          ...rest,
+          ttsUrls,
         });
       } else {
         mediaAssetStore.resetCreateVideoData();

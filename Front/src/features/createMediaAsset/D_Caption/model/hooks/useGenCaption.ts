@@ -8,12 +8,12 @@ import { ERROR_MESSAGES } from "../../constants";
 import { fetchAudioFile, generateCaptionsAPI, translateCaption, processSRT } from "../utils";
 
 export const useGenCaption = ({
-  ttsUrl,
+  ttsUrls,
   language,
   setCaptions,
   videoFormType,
 }: {
-  ttsUrl: string;
+  ttsUrls: string[];
   language: "English" | "Korean";
   setCaptions: (fieldName: CreateVideoField, captions: string) => void;
   videoFormType: "shortForm" | "longForm";
@@ -25,7 +25,7 @@ export const useGenCaption = ({
 
   const generateCaptions = async () => {
     // 유효성 검사
-    if (!ttsUrl) {
+    if (!ttsUrls || ttsUrls.length === 0) {
       alert(ERROR_MESSAGES.NO_TTS);
       return;
     }
@@ -34,7 +34,7 @@ export const useGenCaption = ({
 
     try {
       // 1. 오디오 파일 가져오기
-      const audioFile = await fetchAudioFile(ttsUrl);
+      const audioFile = await fetchAudioFile(ttsUrls);
 
       // 2. 자막 생성
       const result = await generateCaptionsAPI(audioFile, language);

@@ -16,7 +16,7 @@ export interface SavedProject {
   };
   // Persist session-volatile blobs (e.g., audio/tts) so we can recreate object URLs on load
   blobData?: {
-    tts?: Blob | null;
+    tts?: (Blob | null)[] | Blob | null;
     audio?: Record<string, Blob>;
   };
 }

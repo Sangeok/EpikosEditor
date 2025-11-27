@@ -19,7 +19,7 @@ export default function GenVideoTTS() {
   const selectedVideoScript = useMediaAssetStore(
     (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
   );
-  const ttsUrl = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrl);
+  const ttsUrls = useMediaAssetStore((state) => state.initialCreateVideoData.ttsUrls);
 
   const setTts = useMediaAssetStore((state) => state.setTts);
 
@@ -58,7 +58,7 @@ export default function GenVideoTTS() {
 
       <LoadingButton loading={loading} onClick={GenerateTTS} Content="Generate TTS" className="mt-8" />
 
-      <TTSPlayer ttsUrl={ttsUrl} />
+      <TTSPlayer ttsUrls={ttsUrls} />
 
       <TranslateSection
         loading={loading}

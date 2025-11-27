@@ -95,7 +95,7 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
           const blobPart = audioBytes as unknown as BlobPart;
           const audioBlob = new Blob([blobPart], { type: mimeType ?? "audio/mpeg" });
           const ttsUrl = URL.createObjectURL(audioBlob);
-          setTts(ttsUrl);
+          setTts([ttsUrl]);
         }
       }
 

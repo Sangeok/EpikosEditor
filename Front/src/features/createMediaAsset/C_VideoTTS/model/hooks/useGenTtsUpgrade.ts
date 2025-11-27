@@ -15,7 +15,7 @@ export const useGenTTs = ({
   language,
   selectedVideoScript,
   voice,
-  setTts, // string[] 받을 수 있게 타입 업데이트 필요
+  setTts,
   setLoading,
 }: {
   language: "English" | "Korean";

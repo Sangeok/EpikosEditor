@@ -19,7 +19,7 @@ export const initialCreateVideoData: CreateVideoType = {
     selectedVideoScript: null,
   },
   imageScript: [],
-  ttsUrl: "",
+  ttsUrls: [],
   captions: "",
   videoExplanation: "",
 };
@@ -28,7 +28,7 @@ interface CreateVideoStore {
   initialCreateVideoData: CreateVideoType;
   setCreateVideoDataByField: (field: CreateVideoField, data: string | ImageDataType[] | any) => void;
   setGenerateImageDataByFied: (field1: string, data: VideoStyleOptionsType | videoScriptType) => void;
-  setTts: (ttsUrl: string) => void;
+  setTts: (ttsUrls: string[]) => void;
   // 추가: 전체 세터/리셋
   setCreateVideoData: (data: CreateVideoType) => void;
   resetCreateVideoData: () => void;
@@ -56,11 +56,11 @@ const useCreateVideoStore = create<CreateVideoStore>((set) => ({
       },
     })),
 
-  setTts: (ttsUrl: string) =>
+  setTts: (ttsUrls: string[]) =>
     set((state) => ({
       initialCreateVideoData: {
         ...state.initialCreateVideoData,
-        ttsUrl: ttsUrl,
+        ttsUrls,
       },
     })),
 
