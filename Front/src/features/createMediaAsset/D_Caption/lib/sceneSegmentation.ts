@@ -69,6 +69,8 @@ function normalizeScenes(scenes: ImageScene[], tFirst: number, tLast: number): I
 export function buildSentenceSubs(subs: SrtItem[]): SrtItem[] {
   if (!subs.length) return [];
   const sentenceEndRe = /[.!?。！？]["'”’)]?$/; // 문장 종료 부호(따옴표 포함)로 끝나는지 확인
+  const MAX_SENTENCE_DURATION = 6; // 문장 단위 최대 지속 시간(초)
+  const MAX_SENTENCE_CHAR_COUNT = 120; // 문장 단위 최대 문자 수
 
   const sentences: SrtItem[] = [];
   let bufferText = "";
@@ -82,8 +84,11 @@ export function buildSentenceSubs(subs: SrtItem[]): SrtItem[] {
 
     const isSentenceEnd = sentenceEndRe.test(bufferText);
     const isLastItem = i === subs.length - 1;
+    const bufferDuration = s.end - bufferStart;
+    const reachedDurationLimit = bufferDuration >= MAX_SENTENCE_DURATION;
+    const reachedLengthLimit = bufferText.length >= MAX_SENTENCE_CHAR_COUNT;
 
-    if (isSentenceEnd || isLastItem) {
+    if (isSentenceEnd || reachedDurationLimit || reachedLengthLimit || isLastItem) {
       sentences.push({ start: bufferStart, end: s.end, text: bufferText });
       bufferText = "";
       bufferStart = subs[i + 1]?.start ?? s.end;

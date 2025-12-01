@@ -21,6 +21,10 @@ export default function ImageEditRightSide({ selectedTrackId }: ImageEditRightSi
     handleZoomDurationChange,
   } = useImageEffects();
 
+  if (!imageElement || imageElement.type !== "image") {
+    return <div>No image selected</div>;
+  }
+
   // Zoom 효과 이름 결정 (방향에 따라)
   const zoomEffectName =
     imageElement.zoomDirection === "Zoom In"
@@ -28,10 +32,6 @@ export default function ImageEditRightSide({ selectedTrackId }: ImageEditRightSi
       : imageElement.zoomDirection === "Zoom Out"
       ? "Zoom Out"
       : "None";
-
-  if (!imageElement || imageElement.type !== "image") {
-    return <div>No image selected</div>;
-  }
 
   return (
     <div className="p-4 w-full space-y-4">

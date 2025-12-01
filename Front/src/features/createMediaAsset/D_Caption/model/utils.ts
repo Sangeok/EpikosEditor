@@ -64,6 +64,8 @@ export function processSRT(
     minLastSec: CAPTION_CONFIG.MIN_LAST_DURATION,
   };
 
+  console.log("subs", subs);
+
   const isLongForm = options?.videoFormType === "longForm";
   const scenes = isLongForm ? segmentSRTBySentenceLongForm(subs, baseConfig) : segmentSRTBySentence(subs, baseConfig);
 
