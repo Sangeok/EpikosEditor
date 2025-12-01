@@ -5,6 +5,7 @@ import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import { LanguageSelector } from "@/features/createMediaAsset/B_Topic/ui/_components/LanguageSelector";
 import { ScriptDisplay } from "@/features/createMediaAsset/B_Topic/ui/_components/ScriptDisplay";
 import { TopicTabs } from "@/features/createMediaAsset/B_Topic/ui/_components/TopicTabs/ui";
+import { voiceType } from "@/features/createMediaAsset/C_VideoTTS/model/type";
 import VoiceSelector from "@/features/createMediaAsset/C_VideoTTS/ui/_components/VoiceSelector";
 import VideoStyleOptionItem from "@/features/createMediaAsset/E_VIdeoStyle/ui/_component/VideoStyleOptionItem";
 import { AutoGeneratePayload } from "@/server/autoGenerateStore";
@@ -35,7 +36,9 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
 
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
-  const [voice, setVoice] = useState<string>("alloy");
+  const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
+
+  const [voice, setVoice] = useState<voiceType>({ model: "aura-2-draco-en", name: "Draco" });
 
   const videoScript = useMediaAssetStore((state) => state.initialCreateVideoData.videoScript);
   const setCreateVideoField = useMediaAssetStore((state) => state.setCreateVideoDataByField);
@@ -119,7 +122,7 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
         topicDetail: data.topicDetail,
         language: data.language,
         videoStyle: data.generateImage.generateImageStyle,
-        voice,
+        voice: voice.model,
         videoFormType,
       };
 
@@ -205,7 +208,7 @@ export default function AutoGenerateMediaAsset({ openDialog, setOpenDialog }: Au
         {/* Video TTS */}
         <div className="border border-zinc-700/70 bg-zinc-900/40 p-4 rounded-lg">
           <p className="text-gray-400">Video TTS</p>
-          <VoiceSelector voice={voice} setVoice={setVoice} />
+          <VoiceSelector voice={voice} setVoice={setVoice} language={language} />
         </div>
 
         {/* Video Styles */}

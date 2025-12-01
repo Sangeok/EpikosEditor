@@ -9,7 +9,7 @@ export default function CreateMediaAssetPage() {
     <div>
       <MediaAssetCreatePageHeader />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 p-4 gap-7">
+      <div className="grid grid-cols-1 md:grid-cols-3 p-4 gap-x-7">
         <MediaAssetConfiguration />
 
         <div>

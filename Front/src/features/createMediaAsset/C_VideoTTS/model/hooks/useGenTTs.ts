@@ -1,5 +1,6 @@
 import { videoScriptType } from "@/entities/mediaAsset/types";
 import axios from "axios";
+import { splitText } from "../../lib/splitText";
 
 export const useGenTTs = ({
   language,
@@ -15,21 +16,40 @@ export const useGenTTs = ({
   setLoading: (loading: boolean) => void;
 }) => {
   const GenerateTTS = async () => {
+    const targetText = language === "English" ? selectedVideoScript?.content : selectedVideoScript?.translatedContent;
+
+    if (!targetText) {
+      return;
+    }
+
+    const textChunks = splitText(targetText);
+    if (!textChunks.length) {
+      return;
+    }
+
+    const chunkUrls: string[] = [];
+    const audioBlobs: Blob[] = [];
+
     setLoading(true);
     try {
-      const response = await axios.post(
-        "/api/generate-voice",
-        {
-          text: language === "English" ? selectedVideoScript?.content : selectedVideoScript?.translatedContent,
-          voice: voice,
-        },
-        {
-          responseType: "blob",
-        }
-      );
+      for (const chunk of textChunks) {
+        const response = await axios.post(
+          language === "English" ? "/api/generate-voice-en" : "/api/generate-voice",
+          { text: chunk, voice },
+          {
+            responseType: "blob",
+          }
+        );
 
-      const audioBlob = response.data;
-      const url = URL.createObjectURL(audioBlob);
+        const audioBlob = response.data as Blob;
+        audioBlobs.push(audioBlob);
+        chunkUrls.push(URL.createObjectURL(audioBlob));
+      }
+
+      const mergedBlob = new Blob(audioBlobs, { type: audioBlobs[0]?.type ?? "audio/mpeg" });
+      const url = URL.createObjectURL(mergedBlob);
+
+      chunkUrls.forEach((tempUrl) => URL.revokeObjectURL(tempUrl));
 
       setTts(url);
     } catch (error) {

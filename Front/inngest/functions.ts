@@ -2,6 +2,7 @@ import { VideoStyleOptionsType } from "@/entities/mediaAsset/types";
 import { inngest } from "./client";
 import { convertToSRT } from "@/features/createMediaAsset/D_Caption/lib/convertToSRT";
 import { processSRT, translateCaption } from "@/features/createMediaAsset/D_Caption/model/utils";
+import { splitText } from "@/features/createMediaAsset/C_VideoTTS/lib/splitText";
 import type { AutoGeneratePayload } from "@/server/autoGenerateStore";
 
 type AutoGenerateEvent = {
@@ -72,24 +73,41 @@ export const generateMediaAsset = inngest.createFunction(
       });
 
       const videoTTs = await step.run("generate-video-tts", async () => {
-        let text;
-        if (language === "Korean") {
-          text = videoScript[0].translatedContent;
-        } else {
-          text = videoScript[0].content;
-        }
-        const result = await fetch("http://localhost:3000/api/generate-voice", {
-          method: "POST",
-          body: JSON.stringify({ text, voice }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const targetText = language === "Korean" ? videoScript[0]?.translatedContent : videoScript[0]?.content;
 
-        const arrayBuffer = await result.arrayBuffer();
+        if (!targetText) {
+          throw new Error("No script text available for TTS generation.");
+        }
+
+        const textChunks = splitText(targetText);
+        if (!textChunks.length) {
+          throw new Error("Failed to split script text for TTS generation.");
+        }
+
+        const chunkBuffers: Buffer[] = [];
+        let detectedMimeType = "audio/mpeg";
+        const ttsAPIUrl =
+          language === "English"
+            ? "http://localhost:3000/api/generate-voice-en"
+            : "http://localhost:3000/api/generate-voice";
+
+        for (const chunk of textChunks) {
+          const result = await fetch(ttsAPIUrl, {
+            method: "POST",
+            body: JSON.stringify({ text: chunk, voice }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          detectedMimeType = result.headers.get("content-type") ?? detectedMimeType;
+          const arrayBuffer = await result.arrayBuffer();
+          chunkBuffers.push(Buffer.from(arrayBuffer));
+        }
+
         return {
-          buffer: Buffer.from(arrayBuffer),
-          mimeType: result.headers.get("content-type") ?? "audio/mpeg",
+          buffer: Buffer.concat(chunkBuffers),
+          mimeType: detectedMimeType,
         };
       });
 

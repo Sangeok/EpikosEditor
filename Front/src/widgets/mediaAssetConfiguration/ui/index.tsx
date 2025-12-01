@@ -21,7 +21,7 @@ export function MediaAssetConfiguration() {
   const { isGenerating, generateVideo } = useVideoGenerator();
 
   return (
-    <div className="col-span-2 p-7 border rounded-xl h-[72vh] overflow-y-auto">
+    <div className="col-span-2 p-6 border rounded-xl h-[72vh] overflow-y-auto">
       {/* Project Title */}
       <ProjectTitle />
 

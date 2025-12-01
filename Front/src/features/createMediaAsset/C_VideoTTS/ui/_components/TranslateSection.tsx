@@ -27,7 +27,7 @@ export default function TranslateSection({
   TranslateScript: () => void;
 }) {
   return (
-    <div className="space-y-4 my-4">
+    <div className="space-y-4">
       <TitleTextArea
         title="Translate the TTS Script"
         value={translatedVideoScript}

@@ -9,13 +9,15 @@ import VoiceSelector from "./_components/VoiceSelector";
 import TranslateSection from "./_components/TranslateSection";
 import useMediaAssetStore from "@/entities/mediaAsset/useMediaAssetStore";
 import { LoadingButton } from "@/shared/ui/molecule/LoadingButton";
+import { voiceType } from "../model/type";
 
 export default function GenVideoTTS() {
   const [loading, setLoading] = useState<boolean>(false);
-  const [voice, setVoice] = useState<string>("alloy");
+  const [voice, setVoice] = useState<voiceType>({ model: "aura-2-draco-en", name: "Draco" });
   const [translateLanguage, setTranslateLanguage] = useState<string>("Korean");
 
   const language = useMediaAssetStore((state) => state.initialCreateVideoData.language);
+
   const selectedVideoScript = useMediaAssetStore(
     (state) => state.initialCreateVideoData.generateImage.selectedVideoScript
   );
@@ -32,7 +34,7 @@ export default function GenVideoTTS() {
   const { GenerateTTS } = useGenTTs({
     language,
     selectedVideoScript,
-    voice,
+    voice: voice.model,
     setTts,
     setLoading,
   });
@@ -54,9 +56,9 @@ export default function GenVideoTTS() {
         disabled={true}
       />
 
-      <VoiceSelector voice={voice} setVoice={setVoice} />
+      <VoiceSelector voice={voice} setVoice={setVoice} language={language} />
 
-      <LoadingButton loading={loading} onClick={GenerateTTS} Content="Generate TTS" className="mt-8" />
+      <LoadingButton loading={loading} onClick={GenerateTTS} Content="Generate TTS" className="mt-5" />
 
       <TTSPlayer ttsUrl={ttsUrl} />
 
