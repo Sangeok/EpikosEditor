@@ -22,7 +22,7 @@ export default function Player() {
 
   // show message if no media
   if (projectDuration === 0) {
-    return <div>No media</div>;
+    return <div className="flex items-center justify-center text-white h-full w-full">No media</div>;
   }
 
   const durationInFrames = PlayerService.getDurationInFrames(projectDuration, fps);
@@ -38,8 +38,6 @@ export default function Player() {
       style={{
         width: `${PLAYER_CONFIG.PLAYER_DISPLAY_WIDTH}px`,
         height: "100%",
-        border: "2px solid #333",
-        borderRadius: "10px",
         overflow: "hidden",
       }}
       overflowVisible
