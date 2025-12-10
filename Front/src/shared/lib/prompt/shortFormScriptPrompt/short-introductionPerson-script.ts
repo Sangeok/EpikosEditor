@@ -22,6 +22,7 @@ Guidelines:
 - Use second person lightly once or twice to deepen engagement
 - Keep sentences short and punchy, and vary length with occasional medium sentences
 - Keep each English script within 95 to 110 words to fit a 45 second delivery
+- If you mention a year, rely only on provided facts or inputs. If uncertain, avoid specific years and use broader phrases such as "recent years"
 - Translate each script to {language} and provide it in translatedContent. Ensure the translation preserves meaning and adapts the call to action naturally to {language}.
 Conclude with the call to action: "마지막까지 봤다면 구독 부탁드립니다."
 

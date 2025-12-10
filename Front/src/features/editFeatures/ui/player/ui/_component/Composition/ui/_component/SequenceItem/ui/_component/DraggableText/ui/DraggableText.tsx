@@ -106,8 +106,13 @@ export default function DraggableText({ element }: DraggableTextProps) {
         zIndex: dragState.isDragging || isEditing ? 1001 : 1000,
         fontSize: `${element.fontSize}px`,
         fontFamily: element.font,
+        fontWeight: element.fontWeight ?? 600,
+        lineHeight: element.lineHeight ?? 1.25,
+        letterSpacing: element.letterSpacing != null ? `${element.letterSpacing}em` : undefined,
         color: element.textColor,
-        backgroundColor: element.backgroundColor,
+        backgroundColor: getBackgroundWithOpacity(element.backgroundColor, element.backgroundOpacity),
+        textShadow: element.textShadow,
+        fontStyle: element.fontStyle ?? "normal",
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
@@ -139,4 +144,44 @@ export default function DraggableText({ element }: DraggableTextProps) {
       )}
     </div>
   );
+}
+
+function getBackgroundWithOpacity(color: string, opacity?: number): string {
+  if (opacity == null) {
+    return color;
+  }
+
+  // Tailwind 클래스나 inherit 같은 값은 그대로 사용
+  if (!color || color === "inherit" || color.startsWith("bg-")) {
+    return color;
+  }
+
+  // 이미 rgba 값이면 그대로 사용
+  if (color.startsWith("rgba(") || color.startsWith("rgb(")) {
+    return color;
+  }
+
+  // Hex 색상(#fff, #ffffff)만 rgba로 변환
+  if (color.startsWith("#")) {
+    const cleaned = color.slice(1);
+    let hex = cleaned;
+    if (hex.length === 3) {
+      hex = hex
+        .split("")
+        .map((c) => c + c)
+        .join("");
+    }
+    if (hex.length !== 6) {
+      return color;
+    }
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const clampedOpacity = Math.max(0, Math.min(1, opacity));
+
+    return `rgba(${r}, ${g}, ${b}, ${clampedOpacity})`;
+  }
+
+  return color;
 }

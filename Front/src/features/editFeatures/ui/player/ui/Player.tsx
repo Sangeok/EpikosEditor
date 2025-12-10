@@ -37,7 +37,7 @@ export default function Player() {
       fps={fps}
       style={{
         width: `${PLAYER_CONFIG.PLAYER_DISPLAY_WIDTH}px`,
-        height: "100%",
+        height: `${PLAYER_CONFIG.PLAYER_DISPLAY_HEIGHT}px`,
         overflow: "hidden",
       }}
       overflowVisible

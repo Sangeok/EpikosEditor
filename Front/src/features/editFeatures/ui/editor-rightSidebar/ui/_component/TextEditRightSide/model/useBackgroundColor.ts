@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { BACKGROUND_COLOR_CONFIGS, BackgroundColorName } from "../constants";
 import { useMediaStore } from "@/entities/media/useMediaStore";
 
 export function useBackgroundColor(selectedTrackId: string | null) {
   const { updateTextBackgroundColor } = useMediaStore();
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLButtonElement>(null);
 
   const handleColorChange = useCallback(
     (name: string) => {
@@ -31,10 +29,7 @@ export function useBackgroundColor(selectedTrackId: string | null) {
   );
 
   return {
-    isDropdownOpen,
-    setIsDropdownOpen,
     selectedColor,
     handleColorChange,
-    dropdownRef,
   };
 }
