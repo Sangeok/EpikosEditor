@@ -25,8 +25,8 @@ export default function EditorRightSidebar() {
     }
   };
   return (
-    <aside className="w-50 h-full bg-black border-l border-white/20 overflow-y-auto">
-      <div className="flex flex-col h-full items-center p-2">{renderSubSideBar()}</div>
+    <aside className="w-50 h-full bg-black border-l border-white/20 overflow-y-auto px-2 py-4">
+      <div className="flex flex-col items-cente">{renderSubSideBar()}</div>
     </aside>
   );
 }

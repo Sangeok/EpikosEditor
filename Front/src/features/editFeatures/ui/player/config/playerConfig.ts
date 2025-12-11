@@ -8,7 +8,7 @@ export const PLAYER_CONFIG = {
   COMPOSITION_HEIGHT: 1920,
 
   // Display dimensions (viewer size in pixels)
-  PLAYER_DISPLAY_WIDTH: 225,
+  PLAYER_DISPLAY_WIDTH: 270,
 
   /**
    * Calculated scale factor for X-axis

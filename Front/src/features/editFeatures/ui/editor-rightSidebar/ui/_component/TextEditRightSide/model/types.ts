@@ -22,3 +22,5 @@ export interface TextInputFieldProps {
 export interface NumericInputFieldProps extends TextInputFieldProps {
   onNumericChange: (value: number) => void;
 }
+
+export type FontStyleValue = "normal" | "italic";

@@ -24,6 +24,45 @@ const GlobalFonts: React.FC = () => (
   </style>
 );
 
+const getBackgroundWithOpacity = (color: string, opacity?: number): string => {
+  if (opacity == null) {
+    return color;
+  }
+
+  if (!color || color === 'inherit' || color.startsWith('bg-')) {
+    return color;
+  }
+
+  if (color.startsWith('rgba(') || color.startsWith('rgb(')) {
+    return color;
+  }
+
+  if (color.startsWith('#')) {
+    const cleaned = color.slice(1);
+    let hex = cleaned;
+
+    if (hex.length === 3) {
+      hex = hex
+        .split('')
+        .map((c) => c + c)
+        .join('');
+    }
+
+    if (hex.length !== 6) {
+      return color;
+    }
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const clampedOpacity = Math.max(0, Math.min(1, opacity));
+
+    return `rgba(${r}, ${g}, ${b}, ${clampedOpacity})`;
+  }
+
+  return color;
+};
+
 const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
   textElement,
   fps,
@@ -53,9 +92,12 @@ const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
             left: 0,
             top: 0,
             transform: `translate(${textElement.positionX}px, ${textElement.positionY}px) translateX(-50%)`,
-            width: 'fit-content',
+
+            // 크기 관련
+            width: textElement.width ? `${textElement.width}px` : 'fit-content',
             maxWidth: textElement.maxWidth ?? '100%',
-            height: 'auto',
+            height: textElement.height ? `${textElement.height}px` : 'auto',
+
             display: 'inline-block',
             padding: '5px',
             whiteSpace: textElement.whiteSpace ?? 'pre-wrap',
@@ -64,10 +106,23 @@ const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
             borderRadius: '4px',
             boxSizing: 'border-box',
             textAlign: 'center',
+
+            // 폰트/텍스트 스타일 (모두 textElement에서 가져옴)
             fontSize: `${textElement.fontSize}px`,
             fontFamily: textElement.font || 'Roboto Condensed, sans-serif',
+            fontWeight: textElement.fontWeight ?? 600,
+            lineHeight: textElement.lineHeight ?? 1.25,
+            letterSpacing:
+              textElement.letterSpacing != null
+                ? `${textElement.letterSpacing}em`
+                : undefined,
             color: textElement.textColor,
-            backgroundColor: textElement.backgroundColor,
+            backgroundColor: getBackgroundWithOpacity(
+              textElement.backgroundColor,
+              textElement.backgroundOpacity,
+            ),
+            textShadow: textElement.textShadow,
+            fontStyle: textElement.fontStyle ?? 'normal',
           }}
         >
           {textElement.text}

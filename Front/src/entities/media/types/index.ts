@@ -17,6 +17,20 @@ export interface TextElement {
   width: number;
   height: number;
 
+  // CSS text-shadow 값 (예: "0 0 6.5px rgba(8, 8, 8, 0.82)")
+  textShadow?: string;
+  fontStyle?: string;
+
+  // 고급 스타일 옵션
+  // 여러 줄 자막의 행간 (예: 1.3)
+  lineHeight?: number;
+  // 자막 가독성을 위한 폰트 두께 (예: 400, 500, 600, 700)
+  fontWeight?: number;
+  // 글자 간격(em 단위, 예: 0.02 → 0.02em)
+  letterSpacing?: number;
+  // 배경 박스 불투명도 (0~1, 기본적으로 0.7~1.0 추천)
+  backgroundOpacity?: number;
+
   maxWidth?: string;
   whiteSpace?: string;
   origin?: "create-init" | "user" | string;

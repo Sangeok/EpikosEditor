@@ -60,17 +60,29 @@ export function convertSRTToTextElements(parsedEntries: ParsedSRTEntry[]): TextE
     endTime: entry.endSeconds,
     duration: entry.duration,
     text: entry.text,
+
     positionX: 540, // Center horizontally
-    positionY: 450, // Bottom area for subtitles
-    fontSize: 30,
+    positionY: 950, // Bottom area for subtitles
     maxWidth: "90%",
-    animation: "none",
-    textColor: "#ffffff",
-    backgroundColor: "#000000",
-    font: "Arial",
     width: 900,
     height: 50,
     whiteSpace: "pre-wrap",
+
+    fontSize: 70,
+    font: "Arial",
+    textColor: "#ffffff",
+
+    backgroundColor: "#000000",
+    backgroundOpacity: 0.0,
+
+    lineHeight: 1.3,
+    fontWeight: 400,
+    letterSpacing: 0.02,
+
+    textShadow: "0px 0px 40px rgba(0, 0, 0, 0.95)",
+    fontStyle: "italic",
+
+    animation: "none",
     origin: "create-init",
   }));
 }

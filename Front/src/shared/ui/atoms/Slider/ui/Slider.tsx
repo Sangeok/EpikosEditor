@@ -1,22 +1,36 @@
-import { ZoomIn, ZoomOut } from "lucide-react";
-import IconButton from "../../Button/ui/IconButton";
+type SliderProps = {
+  min: number;
+  max: number;
+  step?: number;
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+};
 
-export default function Slider() {
+export default function Slider({ min, max, step = 1, value, onChange, className = "" }: SliderProps) {
   return (
-    <div className="relative flex-1 mx-4 flex items-center gap-2">
-      <IconButton>
-        <ZoomOut size={15} />
-      </IconButton>
-      <input
-        type="range"
-        min="0"
-        max="100"
-        className="slider w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer focus:outline-none"
-        style={{ width: "100px" }}
-      />
-      <IconButton>
-        <ZoomIn size={15} />
-      </IconButton>
-    </div>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className={
+        `w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer
+         [&::-webkit-slider-thumb]:appearance-none 
+         [&::-webkit-slider-thumb]:w-3 
+         [&::-webkit-slider-thumb]:h-3 
+         [&::-webkit-slider-thumb]:rounded-full 
+         [&::-webkit-slider-thumb]:bg-white 
+         [&::-webkit-slider-thumb]:cursor-pointer
+         [&::-moz-range-thumb]:w-3 
+         [&::-moz-range-thumb]:h-3 
+         [&::-moz-range-thumb]:rounded-full 
+         [&::-moz-range-thumb]:bg-white 
+         [&::-moz-range-thumb]:cursor-pointer
+         [&::-moz-range-thumb]:border-none ` + className
+      }
+    />
   );
 }

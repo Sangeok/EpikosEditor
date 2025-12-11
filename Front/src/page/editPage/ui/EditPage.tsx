@@ -34,8 +34,9 @@ export default function EditPage({ params }: EditPageProps) {
         ref={playerContainerRef}
         style={{
           width: `${PLAYER_CONFIG.PLAYER_DISPLAY_WIDTH}px`,
-          height: "100%",
+          height: `${PLAYER_CONFIG.PLAYER_DISPLAY_HEIGHT}px`,
           overflow: "hidden",
+          backgroundColor: "black",
           transform: `scale(${zoom})`,
         }}
       >
