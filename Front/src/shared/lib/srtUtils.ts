@@ -73,7 +73,7 @@ export function convertSRTToTextElements(parsedEntries: ParsedSRTEntry[]): TextE
     textColor: "#ffffff",
 
     backgroundColor: "#000000",
-    backgroundOpacity: 0.0,
+    backgroundOpacity: 0.4,
 
     lineHeight: 1.3,
     fontWeight: 400,

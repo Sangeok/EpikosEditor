@@ -38,6 +38,10 @@ import {
   SHORT_SCRIPT_PROMPT_LIFE_SCIENCE_KO,
 } from "./shortFormScriptPrompt/short-lifeScience-script";
 import {
+  SHORT_SCRIPT_PROMPT_MOTIVATION_EN,
+  SHORT_SCRIPT_PROMPT_MOTIVATION_KO,
+} from "./shortFormScriptPrompt/short-motivation-script";
+import {
   SHORT_SCRIPT_PROMPT_Philosophy_EN,
   SHORT_SCRIPT_PROMPT_Philosophy_KO,
 } from "./shortFormScriptPrompt/short-philosophy-script";
@@ -68,6 +72,9 @@ const shortFormScriptRegistry: Record<string, (detail: string) => string> = {
   "Art Interpretation:English": (detail) => SHORT_SCRIPT_PROMPT_ART_INTERPRETATION_EN.replace("{artwork name}", detail),
   "Four Idioms:Korean": (detail) =>
     SHORT_SCRIPT_PROMPT_FOUR_IDIOMS_KO.replace("{four idioms}", detail).replace("{language}", "Korean"),
+  "Motivation:English": (detail) => SHORT_SCRIPT_PROMPT_MOTIVATION_EN.replace("{topic}", detail),
+  "Motivation:Korean": (detail) =>
+    SHORT_SCRIPT_PROMPT_MOTIVATION_KO.replace("{topic}", detail).replace("{language}", "Korean"),
 };
 
 const longFormScriptRegistry: Record<string, (detail: string) => string> = {

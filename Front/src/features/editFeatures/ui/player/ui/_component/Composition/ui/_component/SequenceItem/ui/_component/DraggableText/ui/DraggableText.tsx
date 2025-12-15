@@ -93,7 +93,7 @@ export default function DraggableText({ element }: DraggableTextProps) {
         maxWidth: element.maxWidth ?? "100%",
         height: "auto",
         display: "inline-block",
-        padding: "5px",
+        padding: "10px",
         whiteSpace: element.whiteSpace ?? "pre-wrap",
         overflowWrap: "break-word",
         wordBreak: "break-word",

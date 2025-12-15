@@ -181,6 +181,62 @@ Please return ONLY the results in the following JSON format with exactly {scenes
   }
 ]`;
 
+const MOTIVATION_SCRIPT_PROMPT = `
+Generate detailed image prompts in {style} style for a motivational short-form narration.
+
+Motivation topic detail: {motivation}
+Global scene list (JSON): {scenesJson}
+
+Instructions:
+1) Choose exactly ONE historical philosopher OR scientist to appear as the main speaker in ALL images.
+   - Pick someone long-deceased with well-known portrait likeness.
+   - Do NOT choose a living person.
+2) Create EXACTLY {scenes.length} imagePrompt items, in the SAME ORDER as the input scenes.
+3) Every imagePrompt MUST clearly depict the chosen philosopher or scientist as the primary subject:
+   - Face and body visible, realistic human proportions.
+   - Era-appropriate clothing and setting.
+   - Speaking or teaching cues, expressive posture and hand gestures.
+4) You MAY use scenes[i].text as a thematic anchor for symbolism, props, and mood, but do NOT render any text or typography in the image.
+5) Keep the identity consistent across all prompts. Do not change age, hairstyle, facial structure, or signature features.
+6) Apply {style} mainly to composition, lighting, textures, and atmosphere, without distorting the face.
+7) Do NOT include camera angles, lens jargon, shot types, or subscription related content.
+8) Keep each imagePrompt between 30 and 100 words, single paragraph, no line breaks.
+
+Scene metadata copy rules:
+- For each output item at index i, COPY these fields from scenes[i] WITHOUT MODIFICATION:
+  - startTime, endTime, duration, type
+- Also copy the exact scenes[i].text into "sceneContent".
+
+Important notes:
+- Do NOT include camera angle or lens/shot directions.
+- Do NOT include any content related to subscription requests.
+- Focus purely on descriptive visual content suitable for image generation.
+
+Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema (no extra text):
+[
+  {
+    "imagePrompt": "",
+    "sceneContent": "<copy the exact scene.text>",
+    "startTime": <number>,
+    "endTime": <number>,
+    "duration": <number>,
+    "type": "<copy the exact scene.type>",
+  }
+]
+
+Example (shortened, illustrative only):
+[
+  {
+    "imagePrompt": "Pitch-black supermarket aisle, solitary free-sample kiosk glowing faintly under a flickering tube light; deep shadows swallowing product shelves, a hesitant hand reaching toward the tray, tension in the air; stark high-contrast chiaroscuro with {style} textures conveying subtle social pressure and obligation.",
+    "sceneContent": "Think about getting a free sample at the store; you feel more inclined to buy.",
+    "startTime": 11.54,
+    "endTime": 23.244,
+    "duration": 11.704,
+    "type": "image",
+  }
+]
+`;
+
 const SCRIPT_PROMPT = `Generate detailed image prompts in {style} style using BOTH the full script and the provided scenes.
 
 Global context (full script): {script}
@@ -477,6 +533,11 @@ export async function POST(req: Request) {
   } else if (topic === "Four Idioms") {
     PROMPT = FOUR_IDIOMS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
       .replaceAll("{four idioms}", String(topicDetail))
+      .replaceAll("{scenesJson}", JSON.stringify(scenes))
+      .replaceAll("{scenes.length}", String(scenes.length));
+  } else if (topic === "Motivation") {
+    PROMPT = MOTIVATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+      .replaceAll("{motivation}", String(topicDetail))
       .replaceAll("{scenesJson}", JSON.stringify(scenes))
       .replaceAll("{scenes.length}", String(scenes.length));
   }
