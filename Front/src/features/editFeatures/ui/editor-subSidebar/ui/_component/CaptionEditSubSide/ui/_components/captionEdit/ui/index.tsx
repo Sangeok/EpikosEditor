@@ -1,4 +1,4 @@
-import { useCaptionEdit } from "../model/hooks/useCationEdit";
+import { useCaptionEdit } from "../model/hooks/useCaptionEdit";
 import TextEdit from "./_component/TextEdit/ui";
 import ClockField from "./_component/TimeEdit/ui/ClockField";
 

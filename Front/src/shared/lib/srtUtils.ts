@@ -62,18 +62,18 @@ export function convertSRTToTextElements(parsedEntries: ParsedSRTEntry[]): TextE
     text: entry.text,
 
     positionX: 540, // Center horizontally
-    positionY: 950, // Bottom area for subtitles
+    positionY: 850, // Bottom area for subtitles
     maxWidth: "90%",
     width: 900,
     height: 50,
     whiteSpace: "pre-wrap",
 
-    fontSize: 70,
+    fontSize: 50,
     font: "Arial",
     textColor: "#ffffff",
 
     backgroundColor: "#000000",
-    backgroundOpacity: 0.0,
+    backgroundOpacity: 0.4,
 
     lineHeight: 1.3,
     fontWeight: 400,
