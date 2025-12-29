@@ -3,7 +3,7 @@ type AutoGenerateStatus = "pending" | "completed" | "failed";
 export interface AutoGeneratePayload {
   message: string;
   data: Record<string, unknown>;
-  videoScript: string;
+  videoScript: any[];  // 배열로 수정 (이전: string)
   imageScript: unknown[];
   imageUrls: string[];
   explanation: string | null;

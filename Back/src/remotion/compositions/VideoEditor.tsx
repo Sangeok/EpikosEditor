@@ -94,12 +94,12 @@ const TextSequence: React.FC<{ textElement: TextElement; fps: number }> = ({
             transform: `translate(${textElement.positionX}px, ${textElement.positionY}px) translateX(-50%)`,
 
             // 크기 관련
-            width: textElement.width ? `${textElement.width}px` : 'fit-content',
+            width: 'fit-content',
             maxWidth: textElement.maxWidth ?? '100%',
-            height: textElement.height ? `${textElement.height}px` : 'auto',
+            height: 'auto',
 
             display: 'inline-block',
-            padding: '5px',
+            padding: '10px',
             whiteSpace: textElement.whiteSpace ?? 'pre-wrap',
             overflowWrap: 'break-word',
             wordBreak: 'break-word',

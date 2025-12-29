@@ -73,19 +73,44 @@ Write two different scripts for a 40 to 45 second video.
 Topic: {topic}
 
 Guidelines:
-- Write each script in English with natural spoken pacing
-- The topic may be written in Korean. Understand it and convert it into natural English for content.
-- If the title is wrapped in double quotes, use the text inside the first pair of double quotes as the title.
-- Otherwise, extract the title as the first segment of {topic} before the first comma or line break. Trim spaces. If the title is wrapped in double quotes, remove the quotes.
-- CRITICAL OPENING RULE: The first sentence of EACH script MUST be exactly the extracted title, and nothing else. End it with a period.
+- Output JSON only, matching the schema exactly. No extra text.
+- Produce TWO scripts.
+
+Field language rules:
+- content: English with natural spoken pacing. IMPORTANT: The first sentence may be non-English if rawTitle is non-English, and that is REQUIRED.
+- translatedContent: Korean.
+
+TITLE EXTRACTION MUST HAPPEN BEFORE ANY TRANSLATION:
+- From the RAW Topic text EXACTLY as provided, extract rawTitle. Do NOT translate, paraphrase, or rewrite rawTitle.
+- If the title is wrapped in double quotes, rawTitle is the text inside the first pair of double quotes.
+- Otherwise, rawTitle is the first segment of {topic} before the first comma or line break.
+- Trim spaces. If rawTitle is wrapped in double quotes, remove the quotes.
+
+CRITICAL OPENING RULE:
+- The first sentence of EACH script MUST be exactly rawTitle, and nothing else. End it with a period.
 - The title sentence is the hook. Do not add a separate hook line or viewer question after it.
-- CRITICAL FLOW RULE: In content, the second sentence MUST start with "First," then use "Second," and "Third," for the next points.
-- CRITICAL TRANSLATION RULE: In translatedContent, the first sentence MUST be the extracted title in the original wording, not a translation, and it must be placed at the very beginning.
-- CRITICAL TRANSLATION FLOW RULE: In translatedContent, the next sentence MUST start with "첫째," then use "둘째," and "셋째," for the next points, with no filler sentence between the title and "첫째,".
-- If one of the three items contains parentheses, rewrite it without parentheses in both content and translatedContent.
-- If the topic includes a title plus 3 items separated by commas or line breaks, you MUST use those same 3 items as the three points in the script, in the same order, and reuse the item wording for the point names.
-- Do not present explicit solutions or label them as solutions for each point. Focus on deeper mechanisms and consequences. Avoid the word 해결책 in translatedContent.
+
+CONTENT LANGUAGE RULE:
+- The topic and items may be written in Korean. Understand them.
+- Write the BODY of content in natural English, but NEVER translate rawTitle.
+
+CRITICAL FLOW RULE (content):
+- After the title sentence, continue in English from sentence 2.
+- The second sentence MUST start with "First," then use "Second," and "Third," for the next points.
+- Do not add any filler sentence between the title sentence and "First,".
+
+CRITICAL TRANSLATION RULES (translatedContent):
 - Translate each script to {language} and provide it in translatedContent. Use "Korean" for {language}.
+- In translatedContent, the first sentence MUST be exactly rawTitle in the original wording (not a translation), placed at the very beginning.
+- In translatedContent, the next sentence MUST start with "첫째," then use "둘째," and "셋째," for the next points, with no filler sentence between the title and "첫째,".
+
+Topic usage rules:
+- If the topic includes a title plus 3 items separated by commas or line breaks, you MUST use those same 3 items as the three points in the script, in the same order, and reuse the item wording for the point names.
+- If items are not provided, create exactly 3 points that match the title.
+- If an item contains parentheses, rewrite it without parentheses in both content and translatedContent.
+
+Style rules:
+- Do not present explicit solutions or label them as solutions for each point. Focus on deeper mechanisms and consequences. Avoid the word 해결책 in translatedContent.
 - Do not add scene descriptions
 - Do not add anything in braces
 - Do not include greetings or introductions
