@@ -1,4 +1,5 @@
 import { generateScript } from "@/shared/lib/AiModel";
+import { ModelJsonParseError, sendMessageAndParseJson } from "@/shared/lib/modelResponseUtils";
 import { NextResponse } from "next/server";
 
 const SCRIPT_PROMPT = `
@@ -12,13 +13,25 @@ const SCRIPT_PROMPT = `
 `;
 
 export async function POST(req: Request) {
-  const { text, targetLanguage } = await req.json();
+  try {
+    const { text, targetLanguage } = await req.json();
 
-  const PROMPT = SCRIPT_PROMPT.replace("{text}", text).replace("{targetLanguage}", targetLanguage);
+    const PROMPT = SCRIPT_PROMPT.replace("{text}", text).replace("{targetLanguage}", targetLanguage);
 
-  const result = await generateScript.sendMessage(PROMPT);
+    const { parsed } = await sendMessageAndParseJson<{ translatedText?: string }>(generateScript, PROMPT, {
+      maxAttempts: 2,
+      retryInstruction: "Return ONLY valid JSON matching the schema.",
+    });
 
-  const response = result?.response?.text();
+    return NextResponse.json(parsed);
+  } catch (error) {
+    if (error instanceof ModelJsonParseError) {
+      return NextResponse.json(
+        { error: "Invalid JSON from model", raw: error.raw, attempts: error.attempts },
+        { status: 500 },
+      );
+    }
 
-  return NextResponse.json(JSON.parse(response));
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to translate script" }, { status: 500 });
+  }
 }

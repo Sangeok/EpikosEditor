@@ -37,8 +37,9 @@ Guidelines:
 - Do not include greetings or introductions
 - Return plain text stories
 - Each script should be 45 seconds in length (approximately 100-110 words)
-- Translate each script to {language}
 - Conclude with the call to action: "마지막까지 봤다면 구독 부탁드립니다."
+- Translate each script to {language}
+- If {language} is Korean (한국어), write translatedContent in polite honorific Korean (존댓말/합니다체). Use endings like "~습니다/~합니다/~세요" and avoid informal endings like "~다/~해".
 
 Response format (JSON):
 {

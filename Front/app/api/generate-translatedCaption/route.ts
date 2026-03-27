@@ -1,5 +1,5 @@
 import { generateScript } from "@/shared/lib/AiModel";
-import { safeParseJson } from "@/shared/lib/jsonUtils";
+import { ModelJsonParseError, sendMessageAndParseJson } from "@/shared/lib/modelResponseUtils";
 import { NextResponse } from "next/server";
 
 const SCRIPT_PROMPT = `
@@ -49,26 +49,37 @@ Return ONLY valid JSON with this exact schema:
 { "translatedText": "<the input with ONLY Hangul on subtitle text lines translated into {targetLanguage}, preserving every original newline and space>" }
 `;
 
+const JSON_RETRY_INSTRUCTION = `
+IMPORTANT:
+- Return ONLY valid JSON.
+- Do not include markdown code fences or any extra text.
+- Keep all original line breaks exactly as required.
+`;
+
 export async function POST(req: Request) {
-  const { text, targetLanguage } = await req.json();
-
-  const PROMPT = SCRIPT_PROMPT.replace("{text}", text).replaceAll("{targetLanguage}", targetLanguage);
-
-  console.log("PROMPT");
-  console.log(PROMPT);
-
-  const result = await generateScript.sendMessage(PROMPT);
-
-  const response = result?.response?.text();
-
-  console.log("response");
-  console.log(response);
-
   try {
-    const parsed = safeParseJson(response as unknown as string);
+    const { text, targetLanguage } = await req.json();
+
+    const PROMPT = SCRIPT_PROMPT.replace("{text}", text).replaceAll("{targetLanguage}", targetLanguage);
+
+    console.log("PROMPT");
+    console.log(PROMPT);
+
+    const { parsed } = await sendMessageAndParseJson<{ translatedText?: string }>(generateScript, PROMPT, {
+      maxAttempts: 2,
+      retryInstruction: JSON_RETRY_INSTRUCTION,
+    });
+
     return NextResponse.json(parsed);
   } catch (err) {
-    console.error("Failed to parse JSON response from model", err);
-    return NextResponse.json({ error: "Invalid JSON from model", raw: response }, { status: 500 });
+    if (err instanceof ModelJsonParseError) {
+      console.error("Failed to parse JSON response from model", err.parseError);
+      return NextResponse.json({ error: "Invalid JSON from model", raw: err.raw, attempts: err.attempts }, { status: 500 });
+    }
+
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to translate captions" },
+      { status: 500 },
+    );
   }
 }
