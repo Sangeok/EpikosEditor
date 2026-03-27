@@ -1,4 +1,5 @@
 import { generateImageScript } from "@/shared/lib/AiModel";
+import { ModelJsonParseError, sendMessageAndParseJson } from "@/shared/lib/modelResponseUtils";
 import { NextResponse } from "next/server";
 
 const SCRIPT_PROMPT_EN = `Generate detailed image prompts in {style} style for a 45-second video script: {script}
@@ -195,47 +196,63 @@ Please return the results in the following JSON format:
 `;
 
 export async function POST(req: Request) {
-  const { style, script, language, topic, topicDetail } = await req.json();
+  try {
+    const { style, script, language, topic, topicDetail } = await req.json();
 
-  console.log("topic");
-  console.log(topic);
+    console.log("topic");
+    console.log(topic);
 
-  console.log("topicDetail");
-  console.log(topicDetail);
+    console.log("topicDetail");
+    console.log(topicDetail);
 
-  console.log("videoStyle");
-  console.log(style);
+    console.log("videoStyle");
+    console.log(style);
 
-  console.log("videoScript");
-  console.log(script);
+    console.log("videoScript");
+    console.log(script);
 
-  let PROMPT;
+    let PROMPT;
 
-  if (topic === "Philosophy") {
-    PROMPT = PHILOSOPHY_SCRIPT_PROMPT.replace("{style}", style)
-      .replace("{script}", script)
-      .replace("{quote}", topicDetail);
-  } else if (topic === "Dark Psychology") {
-    PROMPT = PSYCHOLOGY_SCRIPT_PROMPT_KO.replace("{style}", style).replace("{script}", script);
-  } else if (topic === "History") {
-    if (language === "English") {
-      PROMPT = SCRIPT_PROMPT_EN.replace("{style}", style).replace("{script}", script);
-    } else {
-      PROMPT = SCRIPT_PROMPT_KO.replace("{style}", style).replace("{script}", script).replace("{language}", language);
+    if (topic === "Philosophy") {
+      PROMPT = PHILOSOPHY_SCRIPT_PROMPT.replace("{style}", style)
+        .replace("{script}", script)
+        .replace("{quote}", topicDetail);
+    } else if (topic === "Dark Psychology") {
+      PROMPT = PSYCHOLOGY_SCRIPT_PROMPT_KO.replace("{style}", style).replace("{script}", script);
+    } else if (topic === "History") {
+      if (language === "English") {
+        PROMPT = SCRIPT_PROMPT_EN.replace("{style}", style).replace("{script}", script);
+      } else {
+        PROMPT = SCRIPT_PROMPT_KO.replace("{style}", style).replace("{script}", script).replace("{language}", language);
+      }
+    } else if (topic === "What If") {
+      PROMPT = WHATIF_SCRIPT_PROMPT_EN.replace("{style}", style).replace("{script}", script);
     }
-  } else if (topic === "What If") {
-    PROMPT = WHATIF_SCRIPT_PROMPT_EN.replace("{style}", style).replace("{script}", script);
+
+    console.log("PROMPT");
+    console.log(PROMPT);
+
+    if (!PROMPT) {
+      return NextResponse.json({ error: "Unsupported topic for image script generation" }, { status: 400 });
+    }
+
+    const { parsed } = await sendMessageAndParseJson<unknown[]>(generateImageScript, PROMPT as string, {
+      maxAttempts: 2,
+      retryInstruction: "Return ONLY valid JSON array matching the schema. No markdown.",
+    });
+
+    return NextResponse.json(parsed);
+  } catch (error) {
+    if (error instanceof ModelJsonParseError) {
+      return NextResponse.json(
+        { error: "Invalid JSON from model", raw: error.raw, attempts: error.attempts },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to generate image script" },
+      { status: 500 },
+    );
   }
-
-  console.log("PROMPT");
-  console.log(PROMPT);
-
-  const result = await generateImageScript.sendMessage(PROMPT as string);
-
-  const response = result?.response?.text();
-
-  console.log("response");
-  console.log(response);
-
-  return NextResponse.json(JSON.parse(response));
 }

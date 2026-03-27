@@ -1,38 +1,6 @@
 import { generateScript } from "@/shared/lib/AiModel";
+import { ModelJsonParseError, sendMessageAndParseJson } from "@/shared/lib/modelResponseUtils";
 import { NextRequest, NextResponse } from "next/server";
-
-function extractJsonString(text: string): string {
-  if (!text) return text;
-  const trimmed = text.trim();
-  const codeBlockMatch = trimmed.match(/```(?:json|JSON)?\s*([\s\S]*?)\s*```/);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-  const anyBlockMatch = trimmed.match(/```\s*([\s\S]*?)\s*```/);
-  if (anyBlockMatch) {
-    return anyBlockMatch[1].trim();
-  }
-  return trimmed;
-}
-
-function safeParseJson(text: string): any {
-  const stripped = extractJsonString(text);
-  try {
-    return JSON.parse(stripped);
-  } catch (e) {
-    const first = stripped.indexOf("{");
-    const last = stripped.lastIndexOf("}");
-    if (first !== -1 && last !== -1 && last > first) {
-      const candidate = stripped.slice(first, last + 1).trim();
-      try {
-        return JSON.parse(candidate);
-      } catch (_) {
-        // fall-through
-      }
-    }
-    throw e;
-  }
-}
 
 const SCRIPT_PROMPT = `
 You are a video content explanation specialist. Your role is to create clear and engaging explanations based on provided video topics and details.
@@ -77,27 +45,34 @@ The revised prompt maintains all the effective elements from the previous versio
 `;
 
 export async function POST(request: NextRequest) {
-  const { topic, topicDetail, language } = await request.json();
-
-  console.log("====설명 작성 시작=====");
-  console.log("topic", topic);
-  console.log("topicDetail", topicDetail);
-  console.log("language", language);
-  console.log("====설명 작성 완료=====");
-
-  const PROMPT = SCRIPT_PROMPT.replace("{topic}", topic)
-    .replace("{topicDetail}", topicDetail)
-    .replace("{language}", language);
-
-  const result = await generateScript.sendMessage(PROMPT);
-
-  const response = result?.response?.text();
-
   try {
-    const parsed = safeParseJson(response as unknown as string);
+    const { topic, topicDetail, language } = await request.json();
+
+    console.log("==== explanation generation start ====");
+    console.log("topic", topic);
+    console.log("topicDetail", topicDetail);
+    console.log("language", language);
+    console.log("==== explanation generation end ====");
+
+    const PROMPT = SCRIPT_PROMPT.replace("{topic}", topic)
+      .replace("{topicDetail}", topicDetail)
+      .replace("{language}", language);
+
+    const { parsed } = await sendMessageAndParseJson<{ explanation?: string }>(generateScript, PROMPT, {
+      maxAttempts: 2,
+      retryInstruction: "Return ONLY valid JSON matching the schema.",
+    });
+
     return NextResponse.json(parsed);
   } catch (err) {
-    console.error("Failed to parse JSON response from model", err);
-    return NextResponse.json({ error: "Invalid JSON from model", raw: response }, { status: 500 });
+    if (err instanceof ModelJsonParseError) {
+      console.error("Failed to parse JSON response from model", err.parseError);
+      return NextResponse.json({ error: "Invalid JSON from model", raw: err.raw, attempts: err.attempts }, { status: 500 });
+    }
+
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to generate explanation" },
+      { status: 500 },
+    );
   }
 }

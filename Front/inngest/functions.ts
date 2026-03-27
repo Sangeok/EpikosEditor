@@ -38,6 +38,10 @@ function getTempFilePath(jobId: string, suffix: string): string {
 function saveToTemp(jobId: string, suffix: string, data: any): string {
   const filePath = getTempFilePath(jobId, suffix);
   try {
+    if (typeof data === "undefined") {
+      throw new Error("Data is undefined");
+    }
+
     if (Buffer.isBuffer(data)) {
       writeFileSync(filePath, data);
     } else {
@@ -79,7 +83,7 @@ function cleanupTempFiles(jobId: string): void {
 async function reportAutoGenerateResult(
   jobId: string | undefined,
   payload: AutoGeneratePayload | null,
-  error?: unknown
+  error?: unknown,
 ) {
   if (!jobId) return;
 
@@ -133,7 +137,18 @@ export const generateMediaAsset = inngest.createFunction(
           headers: { "Content-Type": "application/json" },
         });
 
-        const videoScript = (await scriptResult.json()).scripts;
+        const scriptBody = await scriptResult.json().catch(() => null);
+
+        if (!scriptResult.ok) {
+          throw new Error(
+            `Script request failed: ${scriptResult.status} ${scriptResult.statusText} | ${JSON.stringify(scriptBody)}`,
+          );
+        }
+
+        const videoScript = scriptBody?.scripts;
+        if (!Array.isArray(videoScript) || videoScript.length === 0) {
+          throw new Error(`Invalid script response shape: ${JSON.stringify(scriptBody)}`);
+        }
 
         // 임시 파일로 저장
         const filePath = saveToTemp(jobId, "script.json", videoScript);
@@ -160,9 +175,7 @@ export const generateMediaAsset = inngest.createFunction(
         // 이전 step 데이터 로드
         const videoScript = loadFromTemp(scriptMeta.filePath);
 
-        const targetText = language === "Korean"
-          ? videoScript[0]?.translatedContent
-          : videoScript[0]?.content;
+        const targetText = language === "Korean" ? videoScript[0]?.translatedContent : videoScript[0]?.content;
 
         if (!targetText) {
           throw new Error("No script text available for TTS generation.");
@@ -175,9 +188,10 @@ export const generateMediaAsset = inngest.createFunction(
 
         const chunkBuffers: Buffer[] = [];
         let detectedMimeType = "audio/mpeg";
-        const ttsAPIUrl = language === "English"
-          ? "http://localhost:3000/api/generate-voice-en"
-          : "http://localhost:3000/api/generate-voice";
+        const ttsAPIUrl =
+          language === "English"
+            ? "http://localhost:3000/api/generate-voice-en"
+            : "http://localhost:3000/api/generate-voice";
 
         for (let i = 0; i < textChunks.length; i++) {
           console.log(`[Step 2/6] TTS chunk ${i + 1}/${textChunks.length} 생성 중...`);
@@ -425,5 +439,5 @@ export const generateMediaAsset = inngest.createFunction(
         error: error instanceof Error ? error.message : String(error),
       };
     }
-  }
+  },
 );

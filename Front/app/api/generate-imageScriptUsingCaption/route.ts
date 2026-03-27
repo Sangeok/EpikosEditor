@@ -1,4 +1,5 @@
 import { generateImageScript } from "@/shared/lib/AiModel";
+import { ModelJsonParseError, sendMessageAndParseJson } from "@/shared/lib/modelResponseUtils";
 import { NextResponse } from "next/server";
 
 const LIFE_SCIENCE_SCRIPT_PROMPT = `
@@ -467,90 +468,106 @@ Return ONLY a JSON array with EXACTLY {scenes.length} objects using this schema 
 ]`;
 
 export async function POST(req: Request) {
-  const { style, script, language, topic, topicDetail, scenes } = await req.json();
+  try {
+    const { style, script, language, topic, topicDetail, scenes } = await req.json();
 
-  console.log("topic");
-  console.log(topic);
+    console.log("topic");
+    console.log(topic);
 
-  console.log("topicDetail");
-  console.log(topicDetail);
+    console.log("topicDetail");
+    console.log(topicDetail);
 
-  console.log("videoStyle");
-  console.log(style);
+    console.log("videoStyle");
+    console.log(style);
 
-  console.log("videoScript");
-  console.log(script);
+    console.log("videoScript");
+    console.log(script);
 
-  console.log("scenes");
-  console.log(scenes);
+    console.log("scenes");
+    console.log(scenes);
 
-  console.log("scenes.length");
-  console.log(scenes.length);
+    console.log("scenes.length");
+    console.log(scenes.length);
 
-  let PROMPT;
+    let PROMPT;
 
-  if (topic === "Philosophy") {
-    PROMPT = PHILOSOPHY_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{scenes.length}", String(scenes.length))
-      .replaceAll("{quote}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes));
-  } else if (topic === "History") {
-    PROMPT = SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{script}", String(script))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Dark Psychology") {
-    PROMPT = PSYCHOLOGY_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{script}", String(script))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length))
-      .replaceAll("{language}", String(language ?? ""));
-  } else if (topic === "Introduction Person") {
-    PROMPT = INTRODUCTION_PERSON_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{person name}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Introduction Animal Facts") {
-    PROMPT = INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{animal facts}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Art Interpretation") {
-    PROMPT = ART_INTERPRETATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{artwork interpretation}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Psychology Experiment") {
-    PROMPT = PSYCHOLOGY_EXPERIMENT_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{psychology experiment}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Life Science") {
-    PROMPT = LIFE_SCIENCE_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{life science}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Four Idioms") {
-    PROMPT = FOUR_IDIOMS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{four idioms}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
-  } else if (topic === "Motivation") {
-    PROMPT = MOTIVATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
-      .replaceAll("{motivation}", String(topicDetail))
-      .replaceAll("{scenesJson}", JSON.stringify(scenes))
-      .replaceAll("{scenes.length}", String(scenes.length));
+    if (topic === "Philosophy") {
+      PROMPT = PHILOSOPHY_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{scenes.length}", String(scenes.length))
+        .replaceAll("{quote}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes));
+    } else if (topic === "History") {
+      PROMPT = SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{script}", String(script))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Dark Psychology") {
+      PROMPT = PSYCHOLOGY_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{script}", String(script))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length))
+        .replaceAll("{language}", String(language ?? ""));
+    } else if (topic === "Introduction Person") {
+      PROMPT = INTRODUCTION_PERSON_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{person name}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Introduction Animal Facts") {
+      PROMPT = INTRODUCTION_ANIMAL_FACTS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{animal facts}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Art Interpretation") {
+      PROMPT = ART_INTERPRETATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{artwork interpretation}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Psychology Experiment") {
+      PROMPT = PSYCHOLOGY_EXPERIMENT_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{psychology experiment}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Life Science") {
+      PROMPT = LIFE_SCIENCE_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{life science}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Four Idioms") {
+      PROMPT = FOUR_IDIOMS_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{four idioms}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    } else if (topic === "Motivation") {
+      PROMPT = MOTIVATION_SCRIPT_PROMPT.replaceAll("{style}", String(style))
+        .replaceAll("{motivation}", String(topicDetail))
+        .replaceAll("{scenesJson}", JSON.stringify(scenes))
+        .replaceAll("{scenes.length}", String(scenes.length));
+    }
+
+    console.log("PROMPT");
+    console.log(PROMPT);
+
+    if (!PROMPT) {
+      return NextResponse.json({ error: "Unsupported topic for image script generation" }, { status: 400 });
+    }
+
+    const { parsed } = await sendMessageAndParseJson<unknown[]>(generateImageScript, PROMPT as string, {
+      maxAttempts: 2,
+      retryInstruction: "Return ONLY valid JSON array matching the schema. No markdown.",
+    });
+
+    return NextResponse.json(parsed);
+  } catch (error) {
+    if (error instanceof ModelJsonParseError) {
+      return NextResponse.json(
+        { error: "Invalid JSON from model", raw: error.raw, attempts: error.attempts },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to generate image script using captions" },
+      { status: 500 },
+    );
   }
-
-  console.log("PROMPT");
-  console.log(PROMPT);
-
-  const result = await generateImageScript.sendMessage(PROMPT as string);
-
-  const response = result?.response?.text();
-
-  console.log("response");
-  console.log(response);
-
-  return NextResponse.json(JSON.parse(response));
 }

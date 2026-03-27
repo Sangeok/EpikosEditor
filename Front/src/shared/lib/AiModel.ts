@@ -20,12 +20,15 @@ export const Openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 });
 
-export const generateScript = model.startChat({
-  generationConfig,
-  history: [],
-});
+function sendMessageWithFreshChat(prompt: string) {
+  return model.startChat({ generationConfig, history: [] }).sendMessage(prompt);
+}
 
-export const generateImageScript = model.startChat({
-  generationConfig,
-  history: [],
-});
+// Keep legacy call shape (`generateScript.sendMessage`) while avoiding shared chat history.
+export const generateScript = {
+  sendMessage: (prompt: string) => sendMessageWithFreshChat(prompt),
+};
+
+export const generateImageScript = {
+  sendMessage: (prompt: string) => sendMessageWithFreshChat(prompt),
+};

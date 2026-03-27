@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "im.runware.ai",
-        pathname: "/image/ws/**",
+        pathname: "/image/**",
       },
     ],
   },
